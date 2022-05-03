@@ -5,7 +5,9 @@ plugins {
 }
 
 group = "net.earthcomputer"
-version = "1.0-SNAPSHOT"
+version = "1.0"
+
+sourceSets["main"].java.srcDirs("src/main/gen")
 
 repositories {
     mavenCentral()

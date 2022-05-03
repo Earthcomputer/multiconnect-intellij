@@ -1,9 +1,13 @@
 package net.earthcomputer.multiconnectintellij
 
+import com.intellij.openapi.project.Project
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiField
+import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiModifier
+import com.intellij.psi.search.FileTypeIndex
+import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.searches.ClassInheritorsSearch
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.CachedValueProvider
@@ -11,6 +15,27 @@ import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
 import com.intellij.psi.util.isAncestor
 import com.intellij.psi.util.parentOfType
+import net.earthcomputer.multiconnectintellij.csv.CsvFileType
+import net.earthcomputer.multiconnectintellij.csv.psi.CsvFile
+
+val Project.protocolsFile: CsvFile? get() {
+    return CachedValuesManager.getManager(this).getCachedValue(this) {
+        var file: CsvFile? = null
+        FileTypeIndex.processFiles(CsvFileType, {
+            if (it.name == "protocols.csv" && it.parent?.name == "data") {
+                file = PsiManager.getInstance(this).findFile(it) as? CsvFile
+                false
+            } else {
+                true
+            }
+        }, GlobalSearchScope.projectScope(this))
+        CachedValueProvider.Result(file, file ?: PsiModificationTracker.MODIFICATION_COUNT)
+    }
+}
+
+fun Project.getProtocolName(id: Int): String? {
+    return protocolsFile?.getRowByKey("id", id.toString())?.getEntry("name")?.text
+}
 
 fun IntRange.intersectRange(other: IntRange): IntRange {
     val start = maxOf(first, other.first)

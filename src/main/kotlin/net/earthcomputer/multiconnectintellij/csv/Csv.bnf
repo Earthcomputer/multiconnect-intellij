@@ -1,0 +1,35 @@
+{
+    parserClass="net.earthcomputer.multiconnectintellij.csv.CsvParser"
+    extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+    psiClassPrefix="Csv"
+    psiImplClassSuffix="Impl"
+    psiPackage="net.earthcomputer.multiconnectintellij.csv.psi"
+    psiImplPackage="net.earthcomputer.multiconnectintellij.csv.psi.impl"
+    elementTypeHolderClass="net.earthcomputer.multiconnectintellij.csv.psi.CsvTypes"
+    elementTypeClass="net.earthcomputer.multiconnectintellij.csv.psi.CsvElementType"
+    tokenTypeClass="net.earthcomputer.multiconnectintellij.csv.psi.CsvTokenType"
+    psiImplUtilClass="net.earthcomputer.multiconnectintellij.csv.psi.impl.CsvPsiImplUtil"
+}
+
+csvFile ::= whitespace_* header ((COMMENT|SPACE|WHITESPACE)? NEWLINE whitespace_* row)* whitespace_*
+
+private whitespace_ ::= (COMMENT|NEWLINE|SPACE|WHITESPACE)
+
+header ::= stringValue (SPACE stringValue)* { methods = [keyElements="stringValue" getKeyNames] }
+
+stringValue ::= STRING
+
+row ::= entry (SPACE entry)* { methods = [getEntry] }
+
+entry ::= identifier properties? { methods = [getKey] }
+
+identifier ::= (stringValue COLON)? stringValue {
+    pin = 2
+    methods = [stringElements="stringValue" getNamespaceElement getPathElement getNamespace getPath getNormalizedString]
+ }
+
+properties ::= OPEN_BRACKET kvPair (COMMA kvPair)* CLOSE_BRACKET { methods = [getProperty] }
+
+kvPair ::= stringValue EQUALS stringValue {
+    methods = [stringElements="stringValue" keyElement="stringValue[0]" valueElement="stringValue[1]" getKey getValue]
+ }

@@ -11,9 +11,13 @@
     <depends>com.intellij.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <annotator language="MulticonnectCSV" implementationClass="net.earthcomputer.multiconnectintellij.csv.CsvAnnotator"/>
         <completion.confidence language="JAVA" implementationClass="net.earthcomputer.multiconnectintellij.MulticonnectCompletionConfidence" order="before javaSkipAutopopupInStrings"/>
         <completion.contributor language="JAVA" implementationClass="net.earthcomputer.multiconnectintellij.MulticonnectCompletionContributor" order="last, before javaLegacy"/>
         <codeInsight.lineMarkerProvider language="JAVA" implementationClass="net.earthcomputer.multiconnectintellij.MessageVariantLineMarkerProvider"/>
+        <fileType name="Multiconnect CSV File" implementationClass="net.earthcomputer.multiconnectintellij.csv.CsvFileType" fieldName="INSTANCE" language="MulticonnectCSV"/>
+        <lang.parserDefinition language="MulticonnectCSV" implementationClass="net.earthcomputer.multiconnectintellij.csv.CsvParserDefinition"/>
+        <lang.syntaxHighlighterFactory language="MulticonnectCSV" implementationClass="net.earthcomputer.multiconnectintellij.csv.CsvSyntaxHighlighterFactory"/>
         <psi.referenceContributor language="JAVA" implementation="net.earthcomputer.multiconnectintellij.MulticonnectReferenceContributor"/>
     </extensions>
 </idea-plugin>
