@@ -1,0 +1,16 @@
+<idea-plugin>
+    <id>net.earthcomputer.multiconnect-intellij</id>
+    <name>Multiconnect Development</name>
+    <vendor email="burtonjae@hotmail.co.uk" url="https://earthcomputer">Earthcomputer</vendor>
+
+    <description><![CDATA[
+    Plugin for Multiconnect development
+  ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.java</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <codeInsight.lineMarkerProvider language="JAVA" implementationClass="net.earthcomputer.multiconnectintellij.MessageVariantLineMarkerProvider"/>
+    </extensions>
+</idea-plugin>
