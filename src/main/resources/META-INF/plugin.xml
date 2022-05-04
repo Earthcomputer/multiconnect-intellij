@@ -23,5 +23,13 @@
         <psi.referenceContributor language="JAVA" implementation="net.earthcomputer.multiconnectintellij.MulticonnectJavaReferenceContributor"/>
         <psi.referenceContributor language="MulticonnectCSV" implementation="net.earthcomputer.multiconnectintellij.csv.CsvReferenceContributor"/>
         <useScopeEnlarger implementation="net.earthcomputer.multiconnectintellij.MulticonnectUseScopeEnlarger"/>
+
+        <localInspection language="JAVA"
+                         displayName="Invalid message variant field type"
+                         groupPath="Multiconnect"
+                         groupName="DSL"
+                         enabledByDefault="true"
+                         level="ERROR"
+                         implementationClass="net.earthcomputer.multiconnectintellij.inspection.InvalidMessageFieldTypeInspection"/>
     </extensions>
 </idea-plugin>
