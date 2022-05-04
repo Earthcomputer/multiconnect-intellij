@@ -1,6 +1,7 @@
 package net.earthcomputer.multiconnectintellij
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.RecursionManager
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiField
@@ -16,6 +17,7 @@ import com.intellij.psi.util.PsiModificationTracker
 import com.intellij.psi.util.isAncestor
 import com.intellij.psi.util.parentOfType
 import net.earthcomputer.multiconnectintellij.csv.CsvFileType
+import net.earthcomputer.multiconnectintellij.csv.CsvReferenceContributor
 import net.earthcomputer.multiconnectintellij.csv.psi.CsvFile
 
 val Project.protocolsFile: CsvFile? get() {
@@ -47,6 +49,58 @@ fun Project.getProtocolName(id: Int): String? {
     return protocolsFile?.getRowByKey("id", id.toString())?.getEntry("name")?.text
 }
 
+enum class PacketDirection {
+    CLIENTBOUND, SERVERBOUND, BOTH
+}
+
+fun getPacketDirection(clazz: PsiClass): PacketDirection? {
+    return findAllPacketUsers(clazz).asSequence().flatMap { packet_ ->
+        var packet = packet_
+
+        if (packet.hasAnnotation(Constants.MESSAGE_VARIANT)) {
+            val group = packet.interfaces.singleOrNull()
+            if (group != null && group.hasAnnotation(Constants.MESSAGE)) {
+                packet = group
+            }
+        }
+
+        if (packet.hasAnnotation(Constants.MESSAGE_VARIANT)) {
+            sequenceOf(packet)
+        } else {
+            ClassInheritorsSearch.search(packet).asSequence().filter { it.hasAnnotation(Constants.MESSAGE_VARIANT) }
+        }
+    }.flatMap { packet ->
+        ReferencesSearch.search(packet).asSequence().filter {
+            CsvReferenceContributor.protocolClassPattern.accepts(it.element)
+        }
+    }.mapNotNull { reference ->
+        reference.element.containingFile?.virtualFile?.let {
+            when (it.name) {
+                "cpackets.csv" -> PacketDirection.SERVERBOUND
+                "spackets.csv" -> PacketDirection.CLIENTBOUND
+                else -> null
+            }
+        }
+    }.reduceOrNull { a, b ->
+        if (a == b) {
+            a
+        } else {
+            PacketDirection.BOTH
+        }
+    }
+}
+
+fun isPacket(clazz: PsiClass): Boolean {
+    return CachedValuesManager.getCachedValue(clazz) {
+        CachedValueProvider.Result(
+            clazz.hasAnnotation(Constants.MESSAGE_VARIANT) && ReferencesSearch.search(clazz).anyMatch {
+                CsvReferenceContributor.protocolClassPattern.accepts(it.element)
+            },
+            PsiModificationTracker.MODIFICATION_COUNT
+        )
+    }
+}
+
 fun IntRange.intersectRange(other: IntRange): IntRange {
     val start = maxOf(first, other.first)
     val end = minOf(last, other.last)
@@ -55,7 +109,7 @@ fun IntRange.intersectRange(other: IntRange): IntRange {
 
 fun findVariantUsages(classToSearch: PsiClass): List<PsiField> {
     return CachedValuesManager.getCachedValue(classToSearch) {
-        val group = classToSearch.interfaces.singleOrNull()?.takeIf { it.hasAnnotation(Constants.MESSAGE) }
+        val group = classToSearch.interfaces.singleOrNull()?.takeIf { classToSearch.hasAnnotation(Constants.MESSAGE_VARIANT) && it.hasAnnotation(Constants.MESSAGE) }
         val candidates = group?.let { ReferencesSearch.search(it) + ReferencesSearch.search(classToSearch) }
             ?: ReferencesSearch.search(classToSearch)
         val result = candidates.mapNotNull { ref ->
@@ -76,6 +130,31 @@ fun findVariantUsages(classToSearch: PsiClass): List<PsiField> {
         }
         CachedValueProvider.Result(result, PsiModificationTracker.MODIFICATION_COUNT)
     }
+}
+
+fun findAllPacketUsers(clazz: PsiClass): Collection<PsiClass> {
+    return CachedValuesManager.getCachedValue(clazz) {
+        CachedValueProvider.Result(doFindAllPacketUsers(clazz, getVersionRange(clazz)), PsiModificationTracker.MODIFICATION_COUNT)
+    }
+}
+
+private fun doFindAllPacketUsers(clazz: PsiClass, versionRange: IntRange): Collection<PsiClass> {
+    val packetUsers = mutableSetOf<PsiClass>()
+
+    RecursionManager.doPreventingRecursion(clazz to versionRange, true) {
+        if (isPacket(clazz)) {
+            packetUsers += clazz
+        }
+        for (field in findVariantUsages(clazz)) {
+            val referencingClass = field.containingClass ?: continue
+            val referencingVersionRange = getVersionRange(referencingClass).intersectRange(versionRange)
+            if (!referencingVersionRange.isEmpty()) {
+                packetUsers += doFindAllPacketUsers(referencingClass, referencingVersionRange)
+            }
+        }
+    }
+
+    return packetUsers
 }
 
 fun getVersionRange(clazz: PsiClass): IntRange {
@@ -103,7 +182,7 @@ private fun getVariantProviderUncached(clazz: PsiClass): VariantProvider? {
     } else {
         clazz
     }
-    if (!clazz.hasAnnotation(Constants.MESSAGE)) {
+    if (!classToSearch.hasAnnotation(Constants.MESSAGE)) {
         return null
     }
     val result = ClassInheritorsSearch.search(classToSearch)

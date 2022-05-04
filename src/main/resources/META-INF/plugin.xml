@@ -21,5 +21,6 @@
         <lang.syntaxHighlighterFactory language="MulticonnectCSV" implementationClass="net.earthcomputer.multiconnectintellij.csv.CsvSyntaxHighlighterFactory"/>
         <psi.referenceContributor language="JAVA" implementation="net.earthcomputer.multiconnectintellij.MulticonnectJavaReferenceContributor"/>
         <psi.referenceContributor language="MulticonnectCSV" implementation="net.earthcomputer.multiconnectintellij.csv.CsvReferenceContributor"/>
+        <useScopeEnlarger implementation="net.earthcomputer.multiconnectintellij.MulticonnectUseScopeEnlarger"/>
     </extensions>
 </idea-plugin>
