@@ -10,6 +10,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import static net.earthcomputer.multiconnectintellij.csv.psi.CsvTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import net.earthcomputer.multiconnectintellij.csv.psi.*;
+import com.intellij.psi.PsiReference;
 
 public class CsvStringValueImpl extends ASTWrapperPsiElement implements CsvStringValue {
 
@@ -25,6 +26,12 @@ public class CsvStringValueImpl extends ASTWrapperPsiElement implements CsvStrin
   public void accept(@NotNull PsiElementVisitor visitor) {
     if (visitor instanceof CsvVisitor) accept((CsvVisitor)visitor);
     else super.accept(visitor);
+  }
+
+  @Override
+  @NotNull
+  public PsiReference[] getReferences() {
+    return CsvPsiImplUtil.getReferences(this);
   }
 
 }

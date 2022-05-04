@@ -17,7 +17,7 @@ private whitespace_ ::= (COMMENT|NEWLINE|SPACE|WHITESPACE)
 
 header ::= stringValue (SPACE stringValue)* { methods = [keyElements="stringValue" getKeyNames] }
 
-stringValue ::= STRING
+stringValue ::= STRING { methods = [getReferences] implements = "com.intellij.psi.ContributedReferenceHost" }
 
 row ::= entry (SPACE entry)* { methods = [getEntry] }
 

@@ -6,7 +6,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import net.earthcomputer.multiconnectintellij.Icons
 
 object CsvFileType : LanguageFileType(CsvLanguage), FileTypeIdentifiableByVirtualFile {
-    private val versionRegex = "1\\.\\d+(?:\\.\\d+)?".toRegex()
+    val versionRegex = "1\\.\\d+(?:\\.\\d+)?".toRegex()
 
     override fun getName() = "Multiconnect CSV File"
 

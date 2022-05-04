@@ -2,6 +2,8 @@
 
 package net.earthcomputer.multiconnectintellij.csv.psi.impl
 
+import com.intellij.psi.PsiReference
+import com.intellij.psi.impl.source.resolve.reference.ReferenceProvidersRegistry
 import net.earthcomputer.multiconnectintellij.csv.psi.CsvEntry
 import net.earthcomputer.multiconnectintellij.csv.psi.CsvFile
 import net.earthcomputer.multiconnectintellij.csv.psi.CsvHeader
@@ -10,6 +12,7 @@ import net.earthcomputer.multiconnectintellij.csv.psi.CsvKvPair
 import net.earthcomputer.multiconnectintellij.csv.psi.CsvProperties
 import net.earthcomputer.multiconnectintellij.csv.psi.CsvRow
 import net.earthcomputer.multiconnectintellij.csv.psi.CsvStringValue
+import net.earthcomputer.multiconnectintellij.csv.psi.csvElementFactory
 
 fun getKeyNames(element: CsvHeader): List<String> {
     return element.keyElements.map { it.text }
@@ -63,3 +66,8 @@ fun getKey(element: CsvEntry): String? {
     val index = row.entryList.indexOf(element)
     return file.header?.keyNames?.getOrNull(index)
 }
+
+fun getReferences(element: CsvStringValue): Array<PsiReference> {
+    return ReferenceProvidersRegistry.getReferencesFromProviders(element)
+}
+

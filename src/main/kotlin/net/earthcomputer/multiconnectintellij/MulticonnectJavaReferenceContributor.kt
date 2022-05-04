@@ -31,7 +31,7 @@ private fun PsiNameValuePairPattern.insideAnnotation(qName: String): PsiNameValu
     return inside(psiAnnotation().qName(qName))
 }
 
-class MulticonnectReferenceContributor : PsiReferenceContributor() {
+class MulticonnectJavaReferenceContributor : PsiReferenceContributor() {
 
     override fun registerReferenceProviders(registrar: PsiReferenceRegistrar) {
         registrar.registerReferenceProvider(

@@ -18,8 +18,8 @@ class CsvFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, CsvLan
         }
     }
 
-    val entries: Array<CsvEntry> get() {
-        return this.findChildrenByClass(CsvEntry::class.java)
+    val rows: Array<CsvRow> get() {
+        return this.findChildrenByClass(CsvRow::class.java)
     }
 
     private fun getRowsByKeyMap(key: String): Map<Pair<String, String>, List<CsvRow>> {

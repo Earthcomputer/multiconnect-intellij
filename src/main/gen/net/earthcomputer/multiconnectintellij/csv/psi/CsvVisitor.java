@@ -4,6 +4,7 @@ package net.earthcomputer.multiconnectintellij.csv.psi;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.ContributedReferenceHost;
 
 public class CsvVisitor extends PsiElementVisitor {
 
@@ -32,7 +33,11 @@ public class CsvVisitor extends PsiElementVisitor {
   }
 
   public void visitStringValue(@NotNull CsvStringValue o) {
-    visitPsiElement(o);
+    visitContributedReferenceHost(o);
+  }
+
+  public void visitContributedReferenceHost(@NotNull ContributedReferenceHost o) {
+    visitElement(o);
   }
 
   public void visitPsiElement(@NotNull PsiElement o) {

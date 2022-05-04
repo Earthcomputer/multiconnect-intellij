@@ -33,6 +33,16 @@ val Project.protocolsFile: CsvFile? get() {
     }
 }
 
+val Project.protocolVersions: List<Int> get() {
+    val protocolsFile = protocolsFile ?: return emptyList()
+    return CachedValuesManager.getCachedValue(protocolsFile) {
+        CachedValueProvider.Result(
+            protocolsFile.rows.mapNotNull { it.getEntry("id")?.text?.toIntOrNull() }.toSortedSet().toList(),
+            protocolsFile
+        )
+    }
+}
+
 fun Project.getProtocolName(id: Int): String? {
     return protocolsFile?.getRowByKey("id", id.toString())?.getEntry("name")?.text
 }
