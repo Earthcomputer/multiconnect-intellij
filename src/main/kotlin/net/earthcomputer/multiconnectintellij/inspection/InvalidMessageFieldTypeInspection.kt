@@ -44,7 +44,7 @@ class InvalidMessageFieldTypeInspection : MessageVariantInspectionBase() {
 
     private fun isValidType(type: PsiType): Boolean {
         return when (type) {
-            is PsiPrimitiveType -> true
+            is PsiPrimitiveType -> type != PsiType.CHAR
             is PsiArrayType -> isValidType(type.deepComponentType)
             is PsiClassType -> isValidClassType(type)
             else -> false

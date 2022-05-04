@@ -13,6 +13,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <annotator language="JAVA" implementationClass="net.earthcomputer.multiconnectintellij.UnresolvedReferenceAnnotator"/>
         <annotator language="MulticonnectCSV" implementationClass="net.earthcomputer.multiconnectintellij.csv.CsvAnnotator"/>
+        <codeInsight.inlayProvider language="JAVA" implementationClass="net.earthcomputer.multiconnectintellij.MulticonnectInlayHintsProvider"/>
         <completion.confidence language="JAVA" implementationClass="net.earthcomputer.multiconnectintellij.MulticonnectCompletionConfidence" order="before javaSkipAutopopupInStrings"/>
         <completion.contributor language="JAVA" implementationClass="net.earthcomputer.multiconnectintellij.MulticonnectCompletionContributor" order="last, before javaLegacy"/>
         <codeInsight.lineMarkerProvider language="JAVA" implementationClass="net.earthcomputer.multiconnectintellij.MessageVariantLineMarkerProvider"/>

@@ -11,6 +11,7 @@ object Constants {
     const val ONLY_IF = "net.earthcomputer.multiconnect.ap.OnlyIf"
     const val POLYMORPHIC = "net.earthcomputer.multiconnect.ap.Polymorphic"
     const val POLYMORPHIC_BY = "net.earthcomputer.multiconnect.ap.PolymorphicBy"
+    const val TYPE = "net.earthcomputer.multiconnect.ap.Type"
 
     const val FASTUTIL_INT_LIST = "it.unimi.dsi.fastutil.ints.IntList"
     const val FASTUTIL_LONG_LIST = "it.unimi.dsi.fastutil.longs.LongList"
