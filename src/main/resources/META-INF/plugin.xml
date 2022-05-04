@@ -38,5 +38,12 @@
                          enabledByDefault="true"
                          level="ERROR"
                          implementationClass="net.earthcomputer.multiconnectintellij.inspection.NetworkEnumInspection"/>
+        <localInspection language="JAVA"
+                         displayName="Invalid message variant field modifiers"
+                         groupPath="Multiconnect"
+                         groupName="DSL"
+                         enabledByDefault="true"
+                         level="ERROR"
+                         implementationClass="net.earthcomputer.multiconnectintellij.inspection.MessageVariantFieldAccessInspection"/>
     </extensions>
 </idea-plugin>
