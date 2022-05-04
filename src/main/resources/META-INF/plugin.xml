@@ -31,5 +31,12 @@
                          enabledByDefault="true"
                          level="ERROR"
                          implementationClass="net.earthcomputer.multiconnectintellij.inspection.InvalidMessageFieldTypeInspection"/>
+        <localInspection language="JAVA"
+                         displayName="Invalid @NetworkEnum"
+                         groupPath="Multiconnect"
+                         groupName="DSL"
+                         enabledByDefault="true"
+                         level="ERROR"
+                         implementationClass="net.earthcomputer.multiconnectintellij.inspection.NetworkEnumInspection"/>
     </extensions>
 </idea-plugin>
