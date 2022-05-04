@@ -11,6 +11,7 @@
     <depends>com.intellij.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <annotator language="JAVA" implementationClass="net.earthcomputer.multiconnectintellij.UnresolvedReferenceAnnotator"/>
         <annotator language="MulticonnectCSV" implementationClass="net.earthcomputer.multiconnectintellij.csv.CsvAnnotator"/>
         <completion.confidence language="JAVA" implementationClass="net.earthcomputer.multiconnectintellij.MulticonnectCompletionConfidence" order="before javaSkipAutopopupInStrings"/>
         <completion.contributor language="JAVA" implementationClass="net.earthcomputer.multiconnectintellij.MulticonnectCompletionContributor" order="last, before javaLegacy"/>
