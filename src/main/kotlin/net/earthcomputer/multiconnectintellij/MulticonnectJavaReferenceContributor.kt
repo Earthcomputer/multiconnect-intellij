@@ -197,7 +197,17 @@ class StringReference(
         val clazz = element.parentOfType<PsiClass>() ?: return emptyArray()
 
         return when (annotationName) {
-            Constants.ARGUMENT -> emptyArray() // TODO
+            Constants.ARGUMENT -> {
+                val method = element.parentOfType<PsiMethod>() ?: return emptyArray()
+                ReferencesSearch.search(method)
+                    .filterIsInstance<StringReference>()
+                    .flatMap { reference ->
+                        getArgumentContextClasses(reference.element)
+                    }
+                    .flatMap { it.clazz.allFields.toList() }
+                    .filter { !it.hasModifierProperty(PsiModifier.STATIC) }
+                    .toTypedArray()
+            }
             Constants.POLYMORPHIC_BY -> clazz.allFields
                 .filter { !it.hasModifierProperty(PsiModifier.STATIC) }
                 .toTypedArray()
