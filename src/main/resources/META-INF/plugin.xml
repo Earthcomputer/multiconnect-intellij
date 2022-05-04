@@ -46,5 +46,12 @@
                          enabledByDefault="true"
                          level="ERROR"
                          implementationClass="net.earthcomputer.multiconnectintellij.inspection.MessageVariantFieldAccessInspection"/>
+        <localInspection language="JAVA"
+                         displayName="Message variant field missing @Introduce"
+                         groupPath="Multiconnect"
+                         groupName="DSL"
+                         enabledByDefault="true"
+                         level="ERROR"
+                         implementationClass="net.earthcomputer.multiconnectintellij.inspection.MissingIntroduceInspection"/>
     </extensions>
 </idea-plugin>

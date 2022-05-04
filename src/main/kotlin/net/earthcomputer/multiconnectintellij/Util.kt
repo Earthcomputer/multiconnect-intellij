@@ -176,6 +176,14 @@ fun getVersionRange(clazz: PsiClass): IntRange {
     }
 }
 
+fun getGroup(clazz: PsiClass): PsiClass? {
+    return when {
+        clazz.hasAnnotation(Constants.MESSAGE) -> clazz
+        clazz.hasAnnotation(Constants.MESSAGE_VARIANT) -> clazz.interfaces.singleOrNull()
+        else -> null
+    }
+}
+
 private fun getVariantProviderUncached(clazz: PsiClass): VariantProvider? {
     val classToSearch = if (clazz.hasAnnotation(Constants.MESSAGE_VARIANT)) {
         clazz.interfaces.singleOrNull() ?: return VariantProvider(listOf(VariantInfo(Int.MIN_VALUE..Int.MAX_VALUE, clazz)))
@@ -205,6 +213,8 @@ fun getVariantProvider(clazz: PsiClass): VariantProvider? {
 }
 
 class VariantProvider(private val variants: List<VariantInfo>) {
+    val isSingleVariant get() = variants.size == 1
+
     fun isValid(): Boolean {
         if (variants.isEmpty()) {
             return false
