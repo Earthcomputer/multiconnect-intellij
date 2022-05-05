@@ -2,6 +2,7 @@ package net.earthcomputer.multiconnectintellij
 
 object Constants {
     const val ARGUMENT = "net.earthcomputer.multiconnect.ap.Argument"
+    const val DATAFIX = "net.earthcomputer.multiconnect.ap.Datafix"
     const val DEFAULT_CONSTRUCT = "net.earthcomputer.multiconnect.ap.DefaultConstruct"
     const val INTRODUCE = "net.earthcomputer.multiconnect.ap.Introduce"
     const val HANDLER = "net.earthcomputer.multiconnect.ap.Handler"

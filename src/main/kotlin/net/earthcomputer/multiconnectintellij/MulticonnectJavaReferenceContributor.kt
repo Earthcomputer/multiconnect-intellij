@@ -67,6 +67,7 @@ object StringReferenceProvider : PsiReferenceProvider() {
                 psiNameValuePair().withName("value").insideAnnotation(Constants.ONLY_IF),
                 psiNameValuePair().withName("condition").insideAnnotation(Constants.POLYMORPHIC),
                 psiNameValuePair().withName("field").insideAnnotation(Constants.POLYMORPHIC_BY),
+                psiNameValuePair().withName("preprocess").insideAnnotation(Constants.DATAFIX),
             ))
 
     override fun getReferencesByElement(
