@@ -42,35 +42,37 @@ class InvalidMessageFieldTypeInspection : MessageVariantInspectionBase() {
         return null
     }
 
-    private fun isValidType(type: PsiType): Boolean {
-        return when (type) {
-            is PsiPrimitiveType -> type != PsiType.CHAR
-            is PsiArrayType -> isValidType(type.deepComponentType)
-            is PsiClassType -> isValidClassType(type)
-            else -> false
+    companion object {
+        fun isValidType(type: PsiType): Boolean {
+            return when (type) {
+                is PsiPrimitiveType -> type != PsiType.CHAR
+                is PsiArrayType -> isValidType(type.deepComponentType)
+                is PsiClassType -> isValidClassType(type)
+                else -> false
+            }
         }
-    }
 
-    private fun isValidClassType(type: PsiClassType): Boolean {
-        val clazz = type.resolve() ?: return true // unresolved will produce a different error
-        val qName = clazz.qualifiedName ?: return true
+        private fun isValidClassType(type: PsiClassType): Boolean {
+            val clazz = type.resolve() ?: return true // unresolved will produce a different error
+            val qName = clazz.qualifiedName ?: return true
 
-        return when (qName) {
-            JAVA_LANG_STRING,
-            JAVA_UTIL_UUID,
-            MINECRAFT_IDENTIFIER,
-            MINECRAFT_NBT_COMPOUND,
-            JAVA_UTIL_OPTIONAL_INT,
-            JAVA_UTIL_OPTIONAL_LONG,
-            FASTUTIL_INT_LIST,
-            FASTUTIL_LONG_LIST,
-            JAVA_UTIL_BIT_SET -> true
-            JAVA_UTIL_LIST,
-            JAVA_UTIL_OPTIONAL -> isValidType(type.parameters.singleOrNull() ?: return false)
-            else -> {
-                return clazz.hasAnnotation(MESSAGE_VARIANT)
-                        || clazz.hasAnnotation(MESSAGE)
-                        || clazz.hasAnnotation(NETWORK_ENUM)
+            return when (qName) {
+                JAVA_LANG_STRING,
+                JAVA_UTIL_UUID,
+                MINECRAFT_IDENTIFIER,
+                MINECRAFT_NBT_COMPOUND,
+                JAVA_UTIL_OPTIONAL_INT,
+                JAVA_UTIL_OPTIONAL_LONG,
+                FASTUTIL_INT_LIST,
+                FASTUTIL_LONG_LIST,
+                JAVA_UTIL_BIT_SET -> true
+                JAVA_UTIL_LIST,
+                JAVA_UTIL_OPTIONAL -> isValidType(type.parameters.singleOrNull() ?: return false)
+                else -> {
+                    return clazz.hasAnnotation(MESSAGE_VARIANT)
+                            || clazz.hasAnnotation(MESSAGE)
+                            || clazz.hasAnnotation(NETWORK_ENUM)
+                }
             }
         }
     }

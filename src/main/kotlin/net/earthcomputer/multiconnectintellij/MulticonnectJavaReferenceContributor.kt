@@ -274,9 +274,8 @@ object StringValueReferenceProvider : PsiReferenceProvider() {
                         || fieldClass?.qualifiedName == MINECRAFT_IDENTIFIER
                     ) -> {
                 val clazz = contextField.containingClass ?: return PsiReference.EMPTY_ARRAY
-                val registryValue = contextField.getAnnotation(Constants.REGISTRY)?.findAttributeValue("value") ?: return PsiReference.EMPTY_ARRAY
-                val enumConstant = (registryValue as? PsiReference)?.resolve() as? PsiEnumConstant ?: return PsiReference.EMPTY_ARRAY
-                val registryName = enumConstant.name.lowercase()
+                val registryValue = contextField.getAnnotation(Constants.REGISTRY)?.getEnumConstant("value") ?: return PsiReference.EMPTY_ARRAY
+                val registryName = registryValue.name.lowercase()
                 RegistryReference(element, rangeInElement, getVersionRange(clazz), registryName)
             }
             else -> return PsiReference.EMPTY_ARRAY

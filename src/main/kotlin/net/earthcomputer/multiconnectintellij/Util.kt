@@ -274,7 +274,7 @@ fun PsiAnnotation.getEnumConstant(key: String): PsiEnumConstant? {
 }
 
 fun PsiAnnotation.getPsiType(key: String, default: PsiType = PsiType.VOID): PsiType {
-    return (findAttributeValue(key) as? PsiClassObjectAccessExpression)?.type ?: default
+    return (findAttributeValue(key) as? PsiClassObjectAccessExpression)?.operand?.type ?: default
 }
 
 private val PsiAnnotationMemberValue?.value get() = this?.run {
