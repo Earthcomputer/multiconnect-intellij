@@ -67,5 +67,12 @@
                          enabledByDefault="true"
                          level="ERROR"
                          implementationClass="net.earthcomputer.multiconnectintellij.inspection.MessageVariantClassInspection"/>
+        <localInspection language="JAVA"
+                         displayName="Missing protocol coverage"
+                         groupPath="Multiconnect"
+                         groupName="DSL"
+                         enabledByDefault="true"
+                         level="ERROR"
+                         implementationClass="net.earthcomputer.multiconnectintellij.inspection.MissingProtocolCoverageInspection"/>
     </extensions>
 </idea-plugin>
