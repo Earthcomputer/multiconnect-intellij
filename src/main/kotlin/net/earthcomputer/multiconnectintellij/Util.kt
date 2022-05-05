@@ -212,7 +212,7 @@ fun getVariantProvider(clazz: PsiClass): VariantProvider? {
     return getVariantProviderPossiblyInvalid(clazz)?.takeIf(VariantProvider::isValid)
 }
 
-class VariantProvider(private val variants: List<VariantInfo>) {
+class VariantProvider(private val variants: List<VariantInfo>) : Iterable<VariantInfo> by variants {
     val isSingleVariant get() = variants.size == 1
 
     fun isValid(): Boolean {

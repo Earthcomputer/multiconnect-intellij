@@ -53,5 +53,12 @@
                          enabledByDefault="true"
                          level="ERROR"
                          implementationClass="net.earthcomputer.multiconnectintellij.inspection.MissingIntroduceInspection"/>
+        <localInspection language="JAVA"
+                         displayName="Type recursion in message variant"
+                         groupPath="Multiconnect"
+                         groupName="DSL"
+                         enabledByDefault="true"
+                         level="ERROR"
+                         implementationClass="net.earthcomputer.multiconnectintellij.inspection.TypeRecursionInspection"/>
     </extensions>
 </idea-plugin>
