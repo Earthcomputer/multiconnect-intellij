@@ -11,10 +11,12 @@ import com.intellij.patterns.PsiNameValuePairPattern
 import com.intellij.patterns.StandardPatterns.*
 import com.intellij.psi.PsiAnnotation
 import com.intellij.psi.PsiClass
+import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementResolveResult
 import com.intellij.psi.PsiEnumConstant
 import com.intellij.psi.PsiLiteral
+import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiModifier
 import com.intellij.psi.PsiPolyVariantReference
@@ -23,10 +25,18 @@ import com.intellij.psi.PsiReferenceBase
 import com.intellij.psi.PsiReferenceContributor
 import com.intellij.psi.PsiReferenceProvider
 import com.intellij.psi.PsiReferenceRegistrar
+import com.intellij.psi.PsiType
 import com.intellij.psi.ResolveResult
+import com.intellij.psi.SmartPsiElementPointer
 import com.intellij.psi.search.searches.ReferencesSearch
+import com.intellij.psi.util.createSmartPointer
 import com.intellij.psi.util.parentOfType
 import com.intellij.util.ProcessingContext
+import net.earthcomputer.multiconnectintellij.Constants.MINECRAFT_IDENTIFIER
+import net.earthcomputer.multiconnectintellij.csv.psi.CsvFile
+import net.earthcomputer.multiconnectintellij.inspection.McTypes
+
+interface ErrorOnUnresolved
 
 private fun PsiNameValuePairPattern.insideAnnotation(qName: String): PsiNameValuePairPattern {
     return inside(psiAnnotation().qName(qName))
@@ -38,6 +48,10 @@ class MulticonnectJavaReferenceContributor : PsiReferenceContributor() {
         registrar.registerReferenceProvider(
             StringReferenceProvider.ELEMENT_PATTERN,
             StringReferenceProvider
+        )
+        registrar.registerReferenceProvider(
+            StringValueReferenceProvider.ELEMENT_PATTERN,
+            StringValueReferenceProvider
         )
     }
 }
@@ -97,7 +111,7 @@ class StringReference(
     private val referenceName: String,
     private val parent: StringReference?,
     private val isLast: Boolean
-) : PsiReferenceBase<PsiLiteral>(literal, range), PsiPolyVariantReference {
+) : PsiReferenceBase<PsiLiteral>(literal, range), PsiPolyVariantReference, ErrorOnUnresolved {
     override fun resolve(): PsiElement? {
         return this.multiResolve(false).singleOrNull()?.element
     }
@@ -218,4 +232,114 @@ class StringReference(
     }
 
     data class Result(val element: PsiElement, val versionRange: IntRange)
+}
+
+object StringValueReferenceProvider : PsiReferenceProvider() {
+    val ELEMENT_PATTERN: PsiJavaElementPattern.Capture<PsiLiteral> =
+        psiLiteral(string())
+            .inside(psiClass().withAnnotation(Constants.MESSAGE_VARIANT))
+            .inside(or(
+                psiNameValuePair().withName("stringValue").insideAnnotation(Constants.DEFAULT_CONSTRUCT),
+                psiNameValuePair().withName("stringValue").insideAnnotation(Constants.INTRODUCE),
+                psiNameValuePair().withName("stringValue").insideAnnotation(Constants.POLYMORPHIC),
+            ))
+
+    override fun getReferencesByElement(element: PsiElement, context: ProcessingContext): Array<PsiReference> {
+        if (element !is PsiLiteral) {
+            return PsiReference.EMPTY_ARRAY
+        }
+
+        val annotation = element.parentOfType<PsiAnnotation>()?.qualifiedName ?: return PsiReference.EMPTY_ARRAY
+        val contextField = when (annotation) {
+            Constants.POLYMORPHIC -> element.parentOfType<PsiClass>()
+                ?.superClass?.takeIf { it.hasAnnotation(Constants.MESSAGE_VARIANT) }
+                ?.fields?.firstOrNull() ?: return PsiReference.EMPTY_ARRAY
+            else -> element.parentOfType() ?: return PsiReference.EMPTY_ARRAY
+        }
+
+        val fieldType = McTypes.getDeepComponentType(contextField.type)
+        val fieldClass = (fieldType as? PsiClassType)?.resolve()
+
+        val rangeInElement = TextRange(1, element.textLength - 1)
+
+        val reference = when {
+            fieldClass?.hasAnnotation(Constants.NETWORK_ENUM) == true -> EnumConstantReference(element, rangeInElement, fieldClass.createSmartPointer())
+            contextField.hasAnnotation(Constants.REGISTRY)
+                    && (fieldType == PsiType.BYTE
+                        || fieldType == PsiType.SHORT
+                        || fieldType == PsiType.INT
+                        || fieldType == PsiType.LONG
+                        || fieldClass?.qualifiedName == MINECRAFT_IDENTIFIER
+                    ) -> {
+                val clazz = contextField.containingClass ?: return PsiReference.EMPTY_ARRAY
+                val registryValue = contextField.getAnnotation(Constants.REGISTRY)?.findAttributeValue("value") ?: return PsiReference.EMPTY_ARRAY
+                val enumConstant = (registryValue as? PsiReference)?.resolve() as? PsiEnumConstant ?: return PsiReference.EMPTY_ARRAY
+                val registryName = enumConstant.name.lowercase()
+                RegistryReference(element, rangeInElement, getVersionRange(clazz), registryName)
+            }
+            else -> return PsiReference.EMPTY_ARRAY
+        }
+
+        return arrayOf(reference)
+    }
+}
+
+class EnumConstantReference(
+    literal: PsiLiteral,
+    range: TextRange,
+    private val enum: SmartPsiElementPointer<PsiClass>
+) : PsiReferenceBase<PsiLiteral>(literal, range), ErrorOnUnresolved {
+    override fun resolve(): PsiElement? {
+        val text = element.value as? String ?: return null
+        val enum = this.enum.element?.takeIf { it.hasAnnotation(Constants.NETWORK_ENUM) } ?: return null
+        return enum.findFieldByName(text, false)?.takeIf { it is PsiEnumConstant }
+    }
+
+    override fun getVariants(): Array<Any> {
+        val enum = this.enum.element?.takeIf { it.hasAnnotation(Constants.NETWORK_ENUM) } ?: return emptyArray()
+        return enum.fields.filterIsInstance<PsiEnumConstant>().toTypedArray()
+    }
+}
+
+class RegistryReference(
+    literal: PsiLiteral,
+    range: TextRange,
+    private val versionRange: IntRange,
+    private val registry: String,
+) : PsiReferenceBase<PsiLiteral>(literal, range), PsiPolyVariantReference, ErrorOnUnresolved {
+    override fun resolve(): PsiElement? {
+        return multiResolve(false).singleOrNull()?.element
+    }
+
+    override fun multiResolve(incompleteCode: Boolean): Array<ResolveResult> {
+        val element = element
+        val text = element.value as? String ?: return ResolveResult.EMPTY_ARRAY
+        val (namespace, path) = if (text.contains(':')) {
+            val pair = text.split(':', limit = 2)
+            pair[0] to pair[1]
+        } else {
+            "minecraft" to text
+        }
+
+        return element.project.protocolVersions.asSequence()
+            .filter { it in versionRange }
+            .mapNotNull { element.project.getProtocolName(it) }
+            .mapNotNull { element.project.protocolsFile?.virtualFile?.parent?.findChild(it)?.findChild("${this.registry}.csv") }
+            .mapNotNull { PsiManager.getInstance(element.project).findFile(it) as? CsvFile }
+            .flatMap { it.getRowsByKey("name", namespace, path) }
+            .mapNotNull { it.getEntry("name") }
+            .map(::PsiElementResolveResult)
+            .toList().toTypedArray()
+    }
+
+    override fun getVariants(): Array<Any> {
+        return element.project.protocolVersions.asSequence()
+            .filter { it in versionRange }
+            .mapNotNull { element.project.getProtocolName(it) }
+            .mapNotNull { element.project.protocolsFile?.virtualFile?.parent?.findChild(it)?.findChild("${this.registry}.csv") }
+            .mapNotNull { PsiManager.getInstance(element.project).findFile(it) as? CsvFile }
+            .flatMap { csvFile -> csvFile.rows.asSequence().mapNotNull { it.getEntry("name") } }
+            .map { it.text }
+            .toSortedSet().toTypedArray()
+    }
 }

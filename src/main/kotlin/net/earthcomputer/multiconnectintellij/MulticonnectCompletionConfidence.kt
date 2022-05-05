@@ -18,7 +18,9 @@ class MulticonnectCompletionConfidence : CompletionConfidence() {
         }
 
         val literal = contextElement.parentOfType<PsiLiteral>() ?: return ThreeState.UNSURE
-        return if (StringReferenceProvider.ELEMENT_PATTERN.accepts(literal)) {
+        return if (StringReferenceProvider.ELEMENT_PATTERN.accepts(literal)
+            || StringValueReferenceProvider.ELEMENT_PATTERN.accepts(literal)
+        ) {
             ThreeState.NO
         } else {
             ThreeState.UNSURE
