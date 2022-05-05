@@ -5,6 +5,7 @@ import com.intellij.codeInspection.InspectionManager
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiEnumConstant
+import com.intellij.psi.PsiModifier
 import net.earthcomputer.multiconnectintellij.Constants
 
 class NetworkEnumInspection : AbstractBaseJavaLocalInspectionTool() {
@@ -21,6 +22,14 @@ class NetworkEnumInspection : AbstractBaseJavaLocalInspectionTool() {
                 annotation.nameReferenceElement ?: return null,
                 isOnTheFly,
                 "@NetworkEnum must only be used on enums"
+            )
+        }
+
+        if (!clazz.hasModifierProperty(PsiModifier.PUBLIC)) {
+            return manager.createProblem(
+                clazz.nameIdentifier ?: return null,
+                isOnTheFly,
+                "@NetworkEnum must be public"
             )
         }
 
