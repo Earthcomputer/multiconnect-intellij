@@ -253,7 +253,7 @@ object StringValueReferenceProvider : PsiReferenceProvider() {
         val contextField = when (annotation) {
             Constants.POLYMORPHIC -> element.parentOfType<PsiClass>()
                 ?.superClass?.takeIf { it.hasAnnotation(Constants.MESSAGE_VARIANT) }
-                ?.fields?.firstOrNull() ?: return PsiReference.EMPTY_ARRAY
+                ?.fields?.firstOrNull { !it.hasModifierProperty(PsiModifier.STATIC) } ?: return PsiReference.EMPTY_ARRAY
             else -> element.parentOfType() ?: return PsiReference.EMPTY_ARRAY
         }
 
