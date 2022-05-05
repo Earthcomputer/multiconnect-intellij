@@ -178,12 +178,10 @@ class StringReference(
             }
             refAnnName == Constants.INTRODUCE -> {
                 val containingClass = refElt.parentOfType<PsiClass>() ?: return emptyList()
-                val direction = refAnn.findAttributeValue("direction")?.let { dir ->
-                    when (((dir as? PsiReference)?.resolve() as? PsiEnumConstant)?.name) {
-                        "FROM_NEWER" -> PacketDirection.SERVERBOUND
-                        "FROM_OLDER" -> PacketDirection.CLIENTBOUND
-                        else -> null
-                    }
+                val direction = when (refAnn.getEnumConstant("direction")?.name) {
+                    "FROM_NEWER" -> PacketDirection.SERVERBOUND
+                    "FROM_OLDER" -> PacketDirection.CLIENTBOUND
+                    else -> null
                 } ?: getPacketDirection(containingClass)?.takeIf { it != PacketDirection.BOTH }
                 ?: return emptyList()
                 val variantProvider = getVariantProvider(containingClass) ?: return emptyList()

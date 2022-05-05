@@ -82,5 +82,12 @@
                          enabledByDefault="true"
                          level="ERROR"
                          implementationClass="net.earthcomputer.multiconnectintellij.inspection.MessageInspection"/>
+        <localInspection language="JAVA"
+                         displayName="@Introduce problems"
+                         groupPath="Multiconnect"
+                         groupName="DSL"
+                         enabledByDefault="true"
+                         level="ERROR"
+                         implementationClass="net.earthcomputer.multiconnectintellij.inspection.IntroduceInspection"/>
     </extensions>
 </idea-plugin>
