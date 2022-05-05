@@ -17,6 +17,7 @@
         <completion.confidence language="JAVA" implementationClass="net.earthcomputer.multiconnectintellij.MulticonnectCompletionConfidence" order="before javaSkipAutopopupInStrings"/>
         <completion.contributor language="JAVA" implementationClass="net.earthcomputer.multiconnectintellij.MulticonnectCompletionContributor" order="last, before javaLegacy"/>
         <codeInsight.lineMarkerProvider language="JAVA" implementationClass="net.earthcomputer.multiconnectintellij.MessageVariantLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="JAVA" implementationClass="net.earthcomputer.multiconnectintellij.MulticonnectFunctionLineMarkerProvider"/>
         <fileType name="Multiconnect CSV File" implementationClass="net.earthcomputer.multiconnectintellij.csv.CsvFileType" fieldName="INSTANCE" language="MulticonnectCSV"/>
         <lang.elementManipulator forClass="net.earthcomputer.multiconnectintellij.csv.psi.CsvStringValue" implementationClass="net.earthcomputer.multiconnectintellij.csv.psi.CsvStringValueManipulator"/>
         <lang.parserDefinition language="MulticonnectCSV" implementationClass="net.earthcomputer.multiconnectintellij.csv.CsvParserDefinition"/>

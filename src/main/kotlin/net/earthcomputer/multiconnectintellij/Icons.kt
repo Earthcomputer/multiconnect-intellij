@@ -7,4 +7,6 @@ object Icons {
     val assocFile = IconLoader.getIcon("/icons/assocFile.svg", javaClass)
     @JvmField
     val multiconnectCsv = IconLoader.getIcon("/icons/multiconnectCsv.svg", javaClass)
+    @JvmField
+    val multiconnectFunction = IconLoader.getIcon("/icons/multiconnectFunction.svg", javaClass)
 }
