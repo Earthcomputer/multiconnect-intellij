@@ -28,7 +28,9 @@ class MulticonnectFunctionLineMarkerProvider : LineMarkerProviderDescriptor() {
             return null
         }
 
-        val isMulticonnectFunction = ReferencesSearch.search(method).anyMatch { it is StringReference }
+        val isMulticonnectFunction = method.hasAnnotation(Constants.HANDLER)
+                || method.hasAnnotation(Constants.PARTIAL_HANDLER)
+                || ReferencesSearch.search(method).anyMatch { it is StringReference }
         if (!isMulticonnectFunction) {
             return null
         }

@@ -126,29 +126,25 @@ class StringReference(
         val clazz = element.parentOfType<PsiClass>() ?: return emptyList()
         return when (annotationName) {
             Constants.ARGUMENT -> {
-                val method = element.parentOfType<PsiMethod>() ?: return emptyList()
-                ReferencesSearch.search(method).filterIsInstance<StringReference>().flatMap { reference ->
-                    val refElt = reference.element
-                    val contextClasses = getArgumentContextClasses(refElt)
-                    if (isLast) {
-                        contextClasses.mapNotNull { contextClass ->
-                            contextClass.clazz.findFieldByName(referenceName, true)?.let { Result(it, contextClass.versions) }
-                        }
-                    } else {
-                        if (referenceName != "outer") {
-                            return@flatMap emptyList()
-                        }
-                        contextClasses.flatMap { contextClass ->
-                            findVariantUsages(contextClass.clazz).mapNotNull { field ->
-                                val usage = field.parentOfType<PsiClass>() ?: return@mapNotNull null
-                                val range = contextClass.versions.intersectRange(getVersionRange(usage))
-                                if (range.isEmpty()) {
-                                    return@mapNotNull null
-                                }
-                                Result(usage, range)
-                            }
-                        }.distinct()
+                val contextClasses = getArgumentContextClasses(element)
+                if (isLast) {
+                    contextClasses.mapNotNull { contextClass ->
+                        contextClass.clazz.findFieldByName(referenceName, true)?.let { Result(it, contextClass.versions) }
                     }
+                } else {
+                    if (referenceName != "outer") {
+                        return emptyList()
+                    }
+                    contextClasses.flatMap { contextClass ->
+                        findVariantUsages(contextClass.clazz).mapNotNull { field ->
+                            val usage = field.parentOfType<PsiClass>() ?: return@mapNotNull null
+                            val range = contextClass.versions.intersectRange(getVersionRange(usage))
+                            if (range.isEmpty()) {
+                                return@mapNotNull null
+                            }
+                            Result(usage, range)
+                        }
+                    }.distinct()
                 }
             }
             Constants.POLYMORPHIC_BY -> {
@@ -169,38 +165,49 @@ class StringReference(
         }
     }
 
-    private fun getArgumentContextClasses(refElt: PsiElement): List<VariantInfo> {
-        val refAnn = refElt.parentOfType<PsiAnnotation>() ?: return emptyList()
-        val refAnnName = refAnn.qualifiedName ?: return emptyList()
-        return when {
-            parent != null -> parent.doResolve().mapNotNull { result ->
-                (result.element as? PsiClass)?.let { VariantInfo(result.versionRange, it) }
-            }
-            refAnnName == Constants.INTRODUCE -> {
-                val containingClass = refElt.parentOfType<PsiClass>() ?: return emptyList()
-                val direction = when (refAnn.getEnumConstant("direction")?.name) {
-                    "FROM_NEWER" -> PacketDirection.SERVERBOUND
-                    "FROM_OLDER" -> PacketDirection.CLIENTBOUND
-                    else -> null
-                } ?: getPacketDirection(containingClass)?.takeIf { it != PacketDirection.BOTH }
-                ?: return emptyList()
-                val variantProvider = getVariantProvider(containingClass) ?: return emptyList()
-                val versionRange = getVersionRange(containingClass)
-                if ((direction == PacketDirection.CLIENTBOUND && versionRange.first == Int.MIN_VALUE)
-                    || (direction == PacketDirection.SERVERBOUND && versionRange.last == Int.MAX_VALUE)) {
-                    return emptyList()
+    private fun getArgumentContextClasses(element: PsiElement): List<VariantInfo> {
+        val method = element.parentOfType<PsiMethod>() ?: return emptyList()
+        val result = ReferencesSearch.search(method).asSequence().filterIsInstance<StringReference>().flatMap { reference ->
+            val refElt = reference.element
+            val refAnn = refElt.parentOfType<PsiAnnotation>() ?: return@flatMap emptyList()
+            val refAnnName = refAnn.qualifiedName ?: return@flatMap emptyList()
+            when {
+                parent != null -> parent.doResolve().mapNotNull { result ->
+                    (result.element as? PsiClass)?.let { VariantInfo(result.versionRange, it) }
                 }
-                val allProtocols = refElt.project.protocolVersions
-                val previousProtocol = if (direction == PacketDirection.CLIENTBOUND) {
-                    allProtocols.getOrNull(allProtocols.binarySearch(versionRange.first) - 1)
-                } else {
-                    allProtocols.getOrNull(allProtocols.binarySearch(versionRange.last) + 1)
-                } ?: return emptyList()
-                val variant = variantProvider.getVariant(previousProtocol) ?: return emptyList()
-                listOf(VariantInfo(previousProtocol..previousProtocol, variant.clazz))
+                refAnnName == Constants.INTRODUCE -> {
+                    val containingClass = refElt.parentOfType<PsiClass>() ?: return@flatMap emptyList()
+                    val direction = when (refAnn.getEnumConstant("direction")?.name) {
+                        "FROM_NEWER" -> PacketDirection.SERVERBOUND
+                        "FROM_OLDER" -> PacketDirection.CLIENTBOUND
+                        else -> null
+                    } ?: getPacketDirection(containingClass)?.takeIf { it != PacketDirection.BOTH }
+                    ?: return@flatMap emptyList()
+                    val variantProvider = getVariantProvider(containingClass) ?: return@flatMap emptyList()
+                    val versionRange = getVersionRange(containingClass)
+                    if ((direction == PacketDirection.CLIENTBOUND && versionRange.first == Int.MIN_VALUE)
+                        || (direction == PacketDirection.SERVERBOUND && versionRange.last == Int.MAX_VALUE)) {
+                        return@flatMap emptyList()
+                    }
+                    val allProtocols = refElt.project.protocolVersions
+                    val previousProtocol = if (direction == PacketDirection.CLIENTBOUND) {
+                        allProtocols.getOrNull(allProtocols.binarySearch(versionRange.first) - 1)
+                    } else {
+                        allProtocols.getOrNull(allProtocols.binarySearch(versionRange.last) + 1)
+                    } ?: return@flatMap emptyList()
+                    val variant = variantProvider.getVariant(previousProtocol) ?: return@flatMap emptyList()
+                    listOf(VariantInfo(previousProtocol..previousProtocol, variant.clazz))
+                }
+                else -> listOfNotNull(refElt.parentOfType<PsiClass>()?.let { VariantInfo(getVersionRange(it), it) })
             }
-            else -> listOfNotNull(refElt.parentOfType<PsiClass>()?.let { VariantInfo(getVersionRange(it), it) })
+        }.toMutableList()
+
+        if (method.hasAnnotation(Constants.HANDLER) || method.hasAnnotation(Constants.PARTIAL_HANDLER)) {
+            val clazz = method.containingClass ?: return result
+            result += VariantInfo(getVersionRange(clazz), clazz)
         }
+
+        return result
     }
 
     override fun getVariants(): Array<Any> {
@@ -210,14 +217,10 @@ class StringReference(
 
         return when (annotationName) {
             Constants.ARGUMENT -> {
-                val method = element.parentOfType<PsiMethod>() ?: return emptyArray()
-                ReferencesSearch.search(method)
-                    .filterIsInstance<StringReference>()
-                    .flatMap { reference ->
-                        getArgumentContextClasses(reference.element)
-                    }
+                getArgumentContextClasses(element)
                     .flatMap { it.clazz.allFields.toList() }
                     .filter { !it.hasModifierProperty(PsiModifier.STATIC) }
+                    .distinct()
                     .toTypedArray()
             }
             Constants.POLYMORPHIC_BY -> clazz.allFields
