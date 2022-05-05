@@ -60,5 +60,12 @@
                          enabledByDefault="true"
                          level="ERROR"
                          implementationClass="net.earthcomputer.multiconnectintellij.inspection.TypeRecursionInspection"/>
+        <localInspection language="JAVA"
+                         displayName="Message variant declaration issues"
+                         groupPath="Multiconnect"
+                         groupName="DSL"
+                         enabledByDefault="true"
+                         level="ERROR"
+                         implementationClass="net.earthcomputer.multiconnectintellij.inspection.MessageVariantClassInspection"/>
     </extensions>
 </idea-plugin>

@@ -3,10 +3,10 @@ package net.earthcomputer.multiconnectintellij.inspection
 import com.intellij.codeInspection.InspectionManager
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.util.RecursionManager
-import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiClassType
 import net.earthcomputer.multiconnectintellij.Constants
+import net.earthcomputer.multiconnectintellij.getBoolean
 import net.earthcomputer.multiconnectintellij.getVariantProvider
 import net.earthcomputer.multiconnectintellij.getVersionRange
 import net.earthcomputer.multiconnectintellij.intersectRange
@@ -21,10 +21,8 @@ class TypeRecursionInspection : MessageVariantInspectionBase() {
     ): Array<ProblemDescriptor>? {
         val parentClass = clazz.superClass?.takeIf { it.hasAnnotation(Constants.MESSAGE_VARIANT) }
 
-        val constantEvaluator = JavaPsiFacade.getInstance(clazz.project).constantEvaluationHelper
-
-        val isTailrec = constantEvaluator.computeConstantExpression(clazz.getAnnotation(Constants.MESSAGE_VARIANT)?.findAttributeValue("tailrec")) as? Boolean ?: false
-        val isParentTailrec = constantEvaluator.computeConstantExpression(parentClass?.getAnnotation(Constants.MESSAGE_VARIANT)?.findAttributeValue("tailrec")) as? Boolean ?: false
+        val isTailrec = clazz.getAnnotation(Constants.MESSAGE_VARIANT)?.getBoolean("tailrec") ?: false
+        val isParentTailrec = parentClass?.getAnnotation(Constants.MESSAGE_VARIANT)?.getBoolean("tailrec") ?: false
 
         if (referencesClass(clazz, parentClass, isTailrec, isParentTailrec, clazz, getVersionRange(clazz))) {
             return manager.createProblem(

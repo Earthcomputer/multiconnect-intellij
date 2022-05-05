@@ -3,10 +3,17 @@ package net.earthcomputer.multiconnectintellij
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.RecursionManager
 import com.intellij.psi.JavaPsiFacade
+import com.intellij.psi.PsiAnnotation
+import com.intellij.psi.PsiAnnotationMemberValue
+import com.intellij.psi.PsiArrayInitializerMemberValue
 import com.intellij.psi.PsiClass
+import com.intellij.psi.PsiClassObjectAccessExpression
+import com.intellij.psi.PsiEnumConstant
 import com.intellij.psi.PsiField
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiModifier
+import com.intellij.psi.PsiReference
+import com.intellij.psi.PsiType
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.searches.ClassInheritorsSearch
@@ -161,14 +168,11 @@ fun getVersionRange(clazz: PsiClass): IntRange {
     return CachedValuesManager.getCachedValue(clazz) {
         val annotation = clazz.getAnnotation(Constants.MESSAGE_VARIANT)
             ?: return@getCachedValue CachedValueProvider.Result(Int.MIN_VALUE..Int.MAX_VALUE, clazz)
-        val constantEvaluator = JavaPsiFacade.getInstance(clazz.project).constantEvaluationHelper
-        var minVersion = annotation.findAttributeValue("minVersion")
-            ?.let { constantEvaluator.computeConstantExpression(it) } as? Int ?: Int.MIN_VALUE
+        var minVersion = annotation.getInt("minVersion", -1)
         if (minVersion == -1) {
             minVersion = Int.MIN_VALUE
         }
-        var maxVersion = annotation.findAttributeValue("maxVersion")
-            ?.let { constantEvaluator.computeConstantExpression(it) } as? Int ?: Int.MAX_VALUE
+        var maxVersion = annotation.getInt("maxVersion", -1)
         if (maxVersion == -1) {
             maxVersion = Int.MAX_VALUE
         }
@@ -243,3 +247,57 @@ class VariantProvider(private val variants: List<VariantInfo>) : Iterable<Varian
 }
 
 data class VariantInfo(val versions: IntRange, val clazz: PsiClass)
+
+
+fun PsiAnnotation.getBoolean(key: String, default: Boolean = false): Boolean {
+    return findAttributeValue(key).value as? Boolean ?: default
+}
+
+fun PsiAnnotation.getInt(key: String, default: Int = 0): Int {
+    return (findAttributeValue(key).value as? Number)?.toInt() ?: default
+}
+
+fun PsiAnnotation.getLong(key: String, default: Long = 0): Long {
+    return (findAttributeValue(key).value as? Number)?.toLong() ?: default
+}
+
+fun PsiAnnotation.getDouble(key: String, default: Double = 0.0): Double {
+    return (findAttributeValue(key).value as? Number)?.toDouble() ?: default
+}
+
+fun PsiAnnotation.getString(key: String, default: String = ""): String {
+    return findAttributeValue(key).value as? String ?: default
+}
+
+fun PsiAnnotation.getEnumConstant(key: String): PsiEnumConstant? {
+    return (findAttributeValue(key) as? PsiReference)?.resolve() as? PsiEnumConstant
+}
+
+fun PsiAnnotation.getPsiType(key: String, default: PsiType = PsiType.VOID): PsiType {
+    return (findAttributeValue(key) as? PsiClassObjectAccessExpression)?.type ?: default
+}
+
+private val PsiAnnotationMemberValue?.value get() = this?.run {
+    JavaPsiFacade.getInstance(project).constantEvaluationHelper.computeConstantExpression(this)
+}
+
+fun PsiAnnotation.getLongArray(key: String): LongArray {
+    return getArray(key) { (it.value as? Number)?.toLong() }.toLongArray()
+}
+
+fun PsiAnnotation.getDoubleArray(key: String): DoubleArray {
+    return getArray(key) { (it.value as? Number)?.toDouble() }.toDoubleArray()
+}
+
+fun PsiAnnotation.getStringArray(key: String): Array<String> {
+    return getArray(key) { it.value as? String }.toTypedArray()
+}
+
+private inline fun <T: Any> PsiAnnotation.getArray(key: String, func: (PsiAnnotationMemberValue) -> T?): List<T> {
+    val value = findAttributeValue(key) ?: return emptyList()
+    return if (value is PsiArrayInitializerMemberValue) {
+        value.initializers.mapNotNull(func)
+    } else {
+        listOfNotNull(func(value))
+    }
+}

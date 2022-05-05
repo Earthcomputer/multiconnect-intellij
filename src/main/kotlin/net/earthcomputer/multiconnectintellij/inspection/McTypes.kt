@@ -1,13 +1,17 @@
 package net.earthcomputer.multiconnectintellij.inspection
 
+import com.intellij.psi.CommonClassNames.JAVA_LANG_ERROR
+import com.intellij.psi.CommonClassNames.JAVA_LANG_RUNTIME_EXCEPTION
 import com.intellij.psi.CommonClassNames.JAVA_UTIL_LIST
 import com.intellij.psi.CommonClassNames.JAVA_UTIL_OPTIONAL
 import com.intellij.psi.PsiArrayType
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiField
+import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiModifier
 import com.intellij.psi.PsiType
+import com.intellij.psi.util.InheritanceUtil
 import net.earthcomputer.multiconnectintellij.Constants
 import net.earthcomputer.multiconnectintellij.Constants.FASTUTIL_INT_LIST
 import net.earthcomputer.multiconnectintellij.Constants.FASTUTIL_LONG_LIST
@@ -70,5 +74,11 @@ object McTypes {
         }
 
         return results
+    }
+
+    fun throwsCheckedExceptions(method: PsiMethod): Boolean {
+        return method.throwsList.referencedTypes.any {
+            !InheritanceUtil.isInheritor(it, JAVA_LANG_RUNTIME_EXCEPTION) && !InheritanceUtil.isInheritor(it, JAVA_LANG_ERROR)
+        }
     }
 }
