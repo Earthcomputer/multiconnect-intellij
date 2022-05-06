@@ -53,6 +53,10 @@ class MulticonnectJavaReferenceContributor : PsiReferenceContributor() {
             StringValueReferenceProvider.ELEMENT_PATTERN,
             StringValueReferenceProvider
         )
+        registrar.registerReferenceProvider(
+            FromRegistryReferenceProvider.ELEMENT_PATTERN,
+            FromRegistryReferenceProvider
+        )
     }
 }
 
@@ -276,7 +280,7 @@ object StringValueReferenceProvider : PsiReferenceProvider() {
                 val clazz = contextField.containingClass ?: return PsiReference.EMPTY_ARRAY
                 val registryValue = contextField.getAnnotation(Constants.REGISTRY)?.getEnumConstant("value") ?: return PsiReference.EMPTY_ARRAY
                 val registryName = registryValue.name.lowercase()
-                RegistryReference(element, rangeInElement, getVersionRange(clazz), registryName)
+                RegistryReference(element, rangeInElement, listOf(getVersionRange(clazz)), registryName)
             }
             else -> return PsiReference.EMPTY_ARRAY
         }
@@ -302,10 +306,38 @@ class EnumConstantReference(
     }
 }
 
+object FromRegistryReferenceProvider : PsiReferenceProvider() {
+    val ELEMENT_PATTERN: PsiJavaElementPattern.Capture<PsiLiteral> =
+        psiLiteral(string())
+            .inside(psiClass().withAnnotation(Constants.MESSAGE_VARIANT))
+            .inside(or(
+                psiNameValuePair().withName("value").insideAnnotation(Constants.FROM_REGISTRY),
+            ))
+
+    override fun getReferencesByElement(element: PsiElement, context: ProcessingContext): Array<PsiReference> {
+        if (element !is PsiLiteral) {
+            return PsiReference.EMPTY_ARRAY
+        }
+        val annotation = element.parentOfType<PsiAnnotation>() ?: return PsiReference.EMPTY_ARRAY
+        val registry = annotation.getEnumConstant("registry")?.name?.lowercase() ?: return PsiReference.EMPTY_ARRAY
+        val method = annotation.parentOfType<PsiMethod>() ?: return PsiReference.EMPTY_ARRAY
+        val contextClasses = ReferencesSearch.search(method)
+            .filterIsInstance<StringReference>()
+            .mapNotNull { it.element.parentOfType<PsiClass>() }
+            .distinct()
+            .toMutableSet()
+        if (method.hasAnnotation(Constants.HANDLER) || method.hasAnnotation(Constants.PARTIAL_HANDLER)) {
+            method.containingClass?.let { contextClasses += it }
+        }
+        val rangeInElement = TextRange(1, element.textLength - 1)
+        return arrayOf(RegistryReference(element, rangeInElement, contextClasses.map { getVersionRange(it) }, registry))
+    }
+}
+
 class RegistryReference(
     literal: PsiLiteral,
     range: TextRange,
-    private val versionRange: IntRange,
+    private val versionRanges: List<IntRange>,
     private val registry: String,
 ) : PsiReferenceBase<PsiLiteral>(literal, range), PsiPolyVariantReference, ErrorOnUnresolved {
     override fun resolve(): PsiElement? {
@@ -323,7 +355,7 @@ class RegistryReference(
         }
 
         return element.project.protocolVersions.asSequence()
-            .filter { it in versionRange }
+            .filter { version -> versionRanges.any { version in it } }
             .mapNotNull { element.project.getProtocolName(it) }
             .mapNotNull { element.project.protocolsFile?.virtualFile?.parent?.findChild(it)?.findChild("${this.registry}.csv") }
             .mapNotNull { PsiManager.getInstance(element.project).findFile(it) as? CsvFile }
@@ -335,7 +367,7 @@ class RegistryReference(
 
     override fun getVariants(): Array<Any> {
         return element.project.protocolVersions.asSequence()
-            .filter { it in versionRange }
+            .filter { version -> versionRanges.any { version in it } }
             .mapNotNull { element.project.getProtocolName(it) }
             .mapNotNull { element.project.protocolsFile?.virtualFile?.parent?.findChild(it)?.findChild("${this.registry}.csv") }
             .mapNotNull { PsiManager.getInstance(element.project).findFile(it) as? CsvFile }

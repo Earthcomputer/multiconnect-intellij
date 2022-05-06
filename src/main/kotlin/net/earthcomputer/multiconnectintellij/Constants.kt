@@ -4,6 +4,8 @@ object Constants {
     const val ARGUMENT = "net.earthcomputer.multiconnect.ap.Argument"
     const val DATAFIX = "net.earthcomputer.multiconnect.ap.Datafix"
     const val DEFAULT_CONSTRUCT = "net.earthcomputer.multiconnect.ap.DefaultConstruct"
+    const val FILLED_ARGUMENT = "net.earthcomputer.multiconnect.ap.FilledArgument"
+    const val FROM_REGISTRY = "net.earthcomputer.multiconnect.ap.FilledArgument.FromRegistry"
     const val INTRODUCE = "net.earthcomputer.multiconnect.ap.Introduce"
     const val HANDLER = "net.earthcomputer.multiconnect.ap.Handler"
     const val LENGTH = "net.earthcomputer.multiconnect.ap.Length"
@@ -25,4 +27,7 @@ object Constants {
     const val JAVA_UTIL_UUID = "java.util.UUID"
     const val MINECRAFT_IDENTIFIER = "net.minecraft.util.Identifier"
     const val MINECRAFT_NBT_COMPOUND = "net.minecraft.nbt.NbtCompound"
+    const val MINECRAFT_NETWORK_HANDLER = "net.minecraft.client.network.ClientPlayNetworkHandler"
+    const val MULTICONNECT_DELAYED_PACKET_SENDER = "net.earthcomputer.multiconnect.impl.DelayedPacketSender"
+    const val MULTICONNECT_TYPED_MAP = "net.earthcomputer.multiconnect.protocols.generic.TypedMap"
 }
