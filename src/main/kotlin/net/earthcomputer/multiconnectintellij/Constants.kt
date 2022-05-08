@@ -22,6 +22,8 @@ object Constants {
     const val FASTUTIL_INT_LIST = "it.unimi.dsi.fastutil.ints.IntList"
     const val FASTUTIL_LONG_LIST = "it.unimi.dsi.fastutil.longs.LongList"
     const val JAVA_UTIL_BIT_SET = "java.util.BitSet"
+    const val JAVA_UTIL_FUNCTION_INT_FUNCTION = "java.util.function.IntFunction"
+    const val JAVA_UTIL_FUNCTION_TO_INT_FUNCTION = "java.util.function.ToIntFunction"
     const val JAVA_UTIL_OPTIONAL_INT = "java.util.OptionalInt"
     const val JAVA_UTIL_OPTIONAL_LONG = "java.util.OptionalLong"
     const val JAVA_UTIL_UUID = "java.util.UUID"

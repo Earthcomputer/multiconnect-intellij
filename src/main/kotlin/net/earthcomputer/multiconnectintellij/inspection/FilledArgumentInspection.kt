@@ -10,6 +10,8 @@ import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiType
 import com.intellij.psi.util.parentOfType
 import net.earthcomputer.multiconnectintellij.Constants
+import net.earthcomputer.multiconnectintellij.Constants.JAVA_UTIL_FUNCTION_INT_FUNCTION
+import net.earthcomputer.multiconnectintellij.Constants.JAVA_UTIL_FUNCTION_TO_INT_FUNCTION
 import net.earthcomputer.multiconnectintellij.Constants.MINECRAFT_IDENTIFIER
 import net.earthcomputer.multiconnectintellij.Constants.MINECRAFT_NETWORK_HANDLER
 import net.earthcomputer.multiconnectintellij.Constants.MULTICONNECT_DELAYED_PACKET_SENDER
@@ -39,6 +41,14 @@ class FilledArgumentInspection : MessageVariantAnnotationInspection(Constants.FI
                     "@FilledArgument from registry must be of integral or identifier type"
                 )
             }
+        } else if (annotation.findDeclaredAttributeValue("registry") != null) {
+            if (!isValidFilledRegistryType(paramType)) {
+                return manager.createProblem(
+                    parameter.typeElement ?: annotation.nameReferenceElement ?: return null,
+                    isOnTheFly,
+                    "@FilledArgument with registry must be of type IntFunction<Identifier> or ToIntFunction<Identifier>"
+                )
+            }
         } else {
             if (!isValidFilledType(parameter, paramType)) {
                 return manager.createProblem(
@@ -50,6 +60,17 @@ class FilledArgumentInspection : MessageVariantAnnotationInspection(Constants.FI
         }
 
         return null
+    }
+
+    private fun isValidFilledRegistryType(type: PsiType): Boolean {
+        val qName = (type as? PsiClassType)?.resolve()?.qualifiedName ?: return false
+        if (qName != JAVA_UTIL_FUNCTION_INT_FUNCTION && qName != JAVA_UTIL_FUNCTION_TO_INT_FUNCTION) {
+            return false
+        }
+        if ((type.parameters.singleOrNull() as? PsiClassType)?.resolve()?.qualifiedName != MINECRAFT_IDENTIFIER) {
+            return false
+        }
+        return true
     }
 
     private fun isValidFilledType(parameter: PsiParameter, type: PsiType): Boolean {
