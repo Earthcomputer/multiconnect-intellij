@@ -103,7 +103,7 @@ class MessageVariantClassInspection : MessageVariantInspectionBase() {
             }
             if (isTailrec) {
                 val lastField = clazz.fields.lastOrNull { !it.hasModifierProperty(PsiModifier.STATIC) }
-                val isActuallyTailrec = (lastField?.type as? PsiClassType)?.resolve() != clazz
+                val isActuallyTailrec = (lastField?.type as? PsiClassType)?.resolve() == clazz
                 if (!isActuallyTailrec) {
                     return manager.createProblem(
                         clazz.nameIdentifier ?: return null,
