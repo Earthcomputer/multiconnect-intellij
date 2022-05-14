@@ -23,7 +23,7 @@ class MessageVariantLineMarkerProvider : RelatedItemLineMarkerProvider() {
 
         val group = clazz.interfaces.singleOrNull() ?: return
         if (group.hasAnnotation(Constants.MESSAGE)) {
-            val targets = ClassInheritorsSearch.search(group)
+            val targets = ClassInheritorsSearch.search(group, false)
                 .filter { !clazz.isEquivalentTo(it) }
                 .mapNotNull { it.nameIdentifier }
                 .toList()

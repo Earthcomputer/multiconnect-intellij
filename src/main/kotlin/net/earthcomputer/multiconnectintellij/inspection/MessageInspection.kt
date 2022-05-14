@@ -37,7 +37,7 @@ class MessageInspection : AbstractBaseJavaLocalInspectionTool() {
             )
         }
 
-        if (!ClassInheritorsSearch.search(clazz).anyMatch { it.hasAnnotation(Constants.MESSAGE_VARIANT) }) {
+        if (!ClassInheritorsSearch.search(clazz, false).anyMatch { it.hasAnnotation(Constants.MESSAGE_VARIANT) }) {
             return manager.createProblem(
                 clazz.nameIdentifier ?: return null,
                 isOnTheFly,

@@ -74,7 +74,7 @@ fun getPacketDirection(clazz: PsiClass): PacketDirection? {
         if (packet.hasAnnotation(Constants.MESSAGE_VARIANT)) {
             sequenceOf(packet)
         } else {
-            ClassInheritorsSearch.search(packet).asSequence().filter { it.hasAnnotation(Constants.MESSAGE_VARIANT) }
+            ClassInheritorsSearch.search(packet, false).asSequence().filter { it.hasAnnotation(Constants.MESSAGE_VARIANT) }
         }
     }.flatMap { packet ->
         ReferencesSearch.search(packet).asSequence().filter {
@@ -197,7 +197,7 @@ private fun getVariantProviderUncached(clazz: PsiClass): VariantProvider? {
     if (!classToSearch.hasAnnotation(Constants.MESSAGE)) {
         return null
     }
-    val result = ClassInheritorsSearch.search(classToSearch)
+    val result = ClassInheritorsSearch.search(classToSearch, false)
         .mapNotNull { variant ->
             VariantInfo(getVersionRange(variant), variant)
         }

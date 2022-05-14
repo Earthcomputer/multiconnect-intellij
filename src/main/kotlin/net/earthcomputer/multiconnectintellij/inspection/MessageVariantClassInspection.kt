@@ -144,7 +144,7 @@ class MessageVariantClassInspection : MessageVariantInspectionBase() {
             val doubleValue = polymorphic.getDoubleArray("doubleValue")
             val stringValue = polymorphic.getStringArray("stringValue")
 
-            val polymorphicChildren = ClassInheritorsSearch.search(polymorphicParent)
+            val polymorphicChildren = ClassInheritorsSearch.search(polymorphicParent, false)
                 .filter { !it.isEquivalentTo(clazz) && it.hasAnnotation(Constants.MESSAGE_VARIANT) }
                 .mapNotNull { it.getAnnotation(Constants.POLYMORPHIC) }
 
@@ -188,7 +188,7 @@ class MessageVariantClassInspection : MessageVariantInspectionBase() {
         }
 
         if (isPolymorphicParent) {
-            val polymorphicChildren = ClassInheritorsSearch.search(clazz).filter { it.hasAnnotation(Constants.MESSAGE_VARIANT) }
+            val polymorphicChildren = ClassInheritorsSearch.search(clazz, false).filter { it.hasAnnotation(Constants.MESSAGE_VARIANT) }
             if (polymorphicChildren.isEmpty()) {
                 return manager.createProblem(
                     clazz.nameIdentifier ?: return null,
