@@ -63,4 +63,16 @@ public class CsvIdentifierImpl extends ASTWrapperPsiElement implements CsvIdenti
     return CsvPsiImplUtil.getNormalizedString(this);
   }
 
+  @Override
+  @NotNull
+  public String getName() {
+    return CsvPsiImplUtil.getName(this);
+  }
+
+  @Override
+  @NotNull
+  public CsvIdentifier setName(@NotNull String name) {
+    return CsvPsiImplUtil.setName(this, name);
+  }
+
 }

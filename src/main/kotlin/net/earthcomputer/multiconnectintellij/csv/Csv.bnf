@@ -11,24 +11,37 @@
     psiImplUtilClass="net.earthcomputer.multiconnectintellij.csv.psi.impl.CsvPsiImplUtil"
 }
 
-csvFile ::= whitespace_* header ((COMMENT|SPACE|WHITESPACE)? NEWLINE whitespace_* row)* whitespace_*
+csvFile ::= whitespace_* header ((COMMENT|SPACE|WHITESPACE)? NEWLINE whitespace_* row)* whitespace_* <<eof>>
 
 private whitespace_ ::= (COMMENT|NEWLINE|SPACE|WHITESPACE)
 
-header ::= stringValue (SPACE stringValue)* { methods = [keyElements="stringValue" getKeyNames] }
+header ::= stringValue (SPACE stringValue)* {
+    methods = [keyElements="stringValue" getKeyNames]
+    stubClass = "net.earthcomputer.multiconnectintellij.csv.psi.stubs.CsvHeaderStub"
+    elementTypeClass = "net.earthcomputer.multiconnectintellij.csv.psi.impl.CsvHeaderType"
+ }
 
 stringValue ::= STRING { methods = [getReferences] implements = "com.intellij.psi.ContributedReferenceHost" }
 
-row ::= entry (SPACE entry)* { methods = [getEntry] }
+row ::= entry (SPACE entry)* {
+    methods = [getEntries getEntry setEntry]
+    stubClass = "net.earthcomputer.multiconnectintellij.csv.psi.stubs.CsvRowStub"
+    elementTypeClass = "net.earthcomputer.multiconnectintellij.csv.psi.impl.CsvRowType"
+ }
 
-entry ::= identifier properties? { methods = [getKey] }
+entry ::= identifier properties? {
+    methods = [getNamespace getPath getKey]
+    stubClass = "net.earthcomputer.multiconnectintellij.csv.psi.stubs.CsvEntryStub"
+    elementTypeClass = "net.earthcomputer.multiconnectintellij.csv.psi.impl.CsvEntryType"
+ }
 
 identifier ::= (stringValue COLON)? stringValue {
     pin = 2
-    methods = [stringElements="stringValue" getNamespaceElement getPathElement getNamespace getPath getNormalizedString]
+    methods = [stringElements="stringValue" getNamespaceElement getPathElement getNamespace getPath getNormalizedString getName setName]
+    implements = "com.intellij.psi.PsiNamedElement"
  }
 
-properties ::= OPEN_BRACKET kvPair (COMMA kvPair)* CLOSE_BRACKET { methods = [getProperty] }
+properties ::= OPEN_BRACKET kvPair (COMMA kvPair)* CLOSE_BRACKET { methods = [getProperty toMap] }
 
 kvPair ::= stringValue EQUALS stringValue {
     methods = [stringElements="stringValue" keyElement="stringValue[0]" valueElement="stringValue[1]" getKey getValue]

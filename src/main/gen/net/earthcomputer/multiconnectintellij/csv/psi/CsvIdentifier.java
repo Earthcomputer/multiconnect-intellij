@@ -4,8 +4,9 @@ package net.earthcomputer.multiconnectintellij.csv.psi;
 import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiNamedElement;
 
-public interface CsvIdentifier extends PsiElement {
+public interface CsvIdentifier extends PsiNamedElement {
 
   @NotNull
   List<CsvStringValue> getStringElements();
@@ -24,5 +25,11 @@ public interface CsvIdentifier extends PsiElement {
 
   @NotNull
   String getNormalizedString();
+
+  @NotNull
+  String getName();
+
+  @NotNull
+  CsvIdentifier setName(@NotNull String name);
 
 }

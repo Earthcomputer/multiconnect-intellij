@@ -6,16 +6,20 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.TokenType
-import com.intellij.psi.tree.IFileElementType
+import com.intellij.psi.stubs.PsiFileStub
+import com.intellij.psi.tree.IStubFileElementType
 import com.intellij.psi.tree.TokenSet
 import net.earthcomputer.multiconnectintellij.csv.psi.CsvFile
 import net.earthcomputer.multiconnectintellij.csv.psi.CsvTypes
+import net.earthcomputer.multiconnectintellij.csv.psi.stubs.CsvStubBuilder
 
 class CsvParserDefinition : ParserDefinition {
     private val whiteSpaces = TokenSet.create(TokenType.WHITE_SPACE)
     private val comments = TokenSet.create(CsvTypes.COMMENT)
 
-    private val fileType = IFileElementType(CsvLanguage)
+    private val fileType = object : IStubFileElementType<PsiFileStub<CsvFile>>(CsvLanguage) {
+        override fun getBuilder() = CsvStubBuilder()
+    }
 
     override fun createLexer(project: Project?) : CsvLexerAdapter {
         return CsvLexerAdapter()

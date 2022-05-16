@@ -13,9 +13,13 @@ repositories {
     mavenCentral()
 }
 
+dependencies {
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.5.10")
+}
+
 // Configure Gradle IntelliJ Plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
 intellij {
-    version.set("2021.2")
+    version.set("2021.3")
     type.set("IC") // Target IDE Platform
 
     plugins.set(listOf("java"))
@@ -45,5 +49,9 @@ tasks {
 
     publishPlugin {
         token.set(System.getenv("PUBLISH_TOKEN"))
+    }
+
+    runIde {
+        systemProperty("idea.ProcessCanceledException", "disabled")
     }
 }

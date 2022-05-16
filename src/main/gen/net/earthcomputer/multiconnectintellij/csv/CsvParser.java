@@ -36,7 +36,7 @@ public class CsvParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // whitespace_* header ((COMMENT|SPACE|WHITESPACE)? NEWLINE whitespace_* row)* whitespace_*
+  // whitespace_* header ((COMMENT|SPACE|WHITESPACE)? NEWLINE whitespace_* row)* whitespace_* <<eof>>
   static boolean csvFile(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "csvFile")) return false;
     boolean r;
@@ -45,6 +45,7 @@ public class CsvParser implements PsiParser, LightPsiParser {
     r = r && header(b, l + 1);
     r = r && csvFile_2(b, l + 1);
     r = r && csvFile_3(b, l + 1);
+    r = r && eof(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }

@@ -8,13 +8,24 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static net.earthcomputer.multiconnectintellij.csv.psi.CsvTypes.*;
-import com.intellij.extapi.psi.ASTWrapperPsiElement;
+import com.intellij.extapi.psi.StubBasedPsiElementBase;
+import net.earthcomputer.multiconnectintellij.csv.psi.stubs.CsvEntryStub;
 import net.earthcomputer.multiconnectintellij.csv.psi.*;
+import com.intellij.psi.stubs.IStubElementType;
+import com.intellij.psi.tree.IElementType;
 
-public class CsvEntryImpl extends ASTWrapperPsiElement implements CsvEntry {
+public class CsvEntryImpl extends StubBasedPsiElementBase<CsvEntryStub> implements CsvEntry {
+
+  public CsvEntryImpl(@NotNull CsvEntryStub stub, @NotNull IStubElementType<?, ?> type) {
+    super(stub, type);
+  }
 
   public CsvEntryImpl(@NotNull ASTNode node) {
     super(node);
+  }
+
+  public CsvEntryImpl(CsvEntryStub stub, IElementType type, ASTNode node) {
+    super(stub, type, node);
   }
 
   public void accept(@NotNull CsvVisitor visitor) {
@@ -30,13 +41,25 @@ public class CsvEntryImpl extends ASTWrapperPsiElement implements CsvEntry {
   @Override
   @NotNull
   public CsvIdentifier getIdentifier() {
-    return findNotNullChildByClass(CsvIdentifier.class);
+    return notNullChild(PsiTreeUtil.getChildOfType(this, CsvIdentifier.class));
   }
 
   @Override
   @Nullable
   public CsvProperties getProperties() {
-    return findChildByClass(CsvProperties.class);
+    return PsiTreeUtil.getChildOfType(this, CsvProperties.class);
+  }
+
+  @Override
+  @NotNull
+  public String getNamespace() {
+    return CsvPsiImplUtil.getNamespace(this);
+  }
+
+  @Override
+  @NotNull
+  public String getPath() {
+    return CsvPsiImplUtil.getPath(this);
   }
 
   @Override

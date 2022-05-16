@@ -4,6 +4,7 @@ package net.earthcomputer.multiconnectintellij.csv.psi;
 import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
+import java.util.Map;
 
 public interface CsvProperties extends PsiElement {
 
@@ -12,5 +13,8 @@ public interface CsvProperties extends PsiElement {
 
   @Nullable
   String getProperty(@NotNull String key);
+
+  @NotNull
+  Map<String, String> toMap();
 
 }

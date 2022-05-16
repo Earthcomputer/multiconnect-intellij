@@ -10,6 +10,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import static net.earthcomputer.multiconnectintellij.csv.psi.CsvTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import net.earthcomputer.multiconnectintellij.csv.psi.*;
+import java.util.Map;
 
 public class CsvPropertiesImpl extends ASTWrapperPsiElement implements CsvProperties {
 
@@ -37,6 +38,12 @@ public class CsvPropertiesImpl extends ASTWrapperPsiElement implements CsvProper
   @Nullable
   public String getProperty(@NotNull String key) {
     return CsvPsiImplUtil.getProperty(this, key);
+  }
+
+  @Override
+  @NotNull
+  public Map<String, String> toMap() {
+    return CsvPsiImplUtil.toMap(this);
   }
 
 }

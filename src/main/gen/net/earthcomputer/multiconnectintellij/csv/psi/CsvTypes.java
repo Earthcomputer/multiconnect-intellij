@@ -4,16 +4,19 @@ package net.earthcomputer.multiconnectintellij.csv.psi;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.PsiElement;
 import com.intellij.lang.ASTNode;
+import net.earthcomputer.multiconnectintellij.csv.psi.impl.CsvEntryType;
+import net.earthcomputer.multiconnectintellij.csv.psi.impl.CsvHeaderType;
+import net.earthcomputer.multiconnectintellij.csv.psi.impl.CsvRowType;
 import net.earthcomputer.multiconnectintellij.csv.psi.impl.*;
 
 public interface CsvTypes {
 
-  IElementType ENTRY = new CsvElementType("ENTRY");
-  IElementType HEADER = new CsvElementType("HEADER");
+  IElementType ENTRY = new CsvEntryType("ENTRY");
+  IElementType HEADER = new CsvHeaderType("HEADER");
   IElementType IDENTIFIER = new CsvElementType("IDENTIFIER");
   IElementType KV_PAIR = new CsvElementType("KV_PAIR");
   IElementType PROPERTIES = new CsvElementType("PROPERTIES");
-  IElementType ROW = new CsvElementType("ROW");
+  IElementType ROW = new CsvRowType("ROW");
   IElementType STRING_VALUE = new CsvElementType("STRING_VALUE");
 
   IElementType CLOSE_BRACKET = new CsvTokenType("CLOSE_BRACKET");

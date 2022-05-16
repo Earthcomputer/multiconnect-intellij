@@ -24,6 +24,7 @@
         <lang.syntaxHighlighterFactory language="MulticonnectCSV" implementationClass="net.earthcomputer.multiconnectintellij.csv.CsvSyntaxHighlighterFactory"/>
         <psi.referenceContributor language="JAVA" implementation="net.earthcomputer.multiconnectintellij.MulticonnectJavaReferenceContributor"/>
         <psi.referenceContributor language="MulticonnectCSV" implementation="net.earthcomputer.multiconnectintellij.csv.CsvReferenceContributor"/>
+        <stubElementTypeHolder class="net.earthcomputer.multiconnectintellij.csv.psi.CsvTypes" externalIdPrefix=""/>
         <useScopeEnlarger implementation="net.earthcomputer.multiconnectintellij.MulticonnectUseScopeEnlarger"/>
 
         <localInspection language="JAVA"
@@ -111,4 +112,14 @@
                          level="ERROR"
                          implementationClass="net.earthcomputer.multiconnectintellij.inspection.FilledArgumentInspection"/>
     </extensions>
+
+    <actions>
+        <group id="MulticonnectRefactoring">
+            <add-to-group group-id="RefactoringMenu" anchor="last"/>
+            <action id="multiconnect-intellij.RegistryRename"
+                    class="net.earthcomputer.multiconnectintellij.action.RegistryRenameAction"
+                    text="Rename Registry Entry"
+                    description="Renames a registry entry between a range of versions"/>
+        </group>
+    </actions>
 </idea-plugin>
