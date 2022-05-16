@@ -24,7 +24,7 @@ header ::= stringValue (SPACE stringValue)* {
 stringValue ::= STRING { methods = [getReferences] implements = "com.intellij.psi.ContributedReferenceHost" }
 
 row ::= entry (SPACE entry)* {
-    methods = [getEntries getEntry setEntry]
+    methods = [getEntries getEntry setEntry copyEntry replaceEntry]
     stubClass = "net.earthcomputer.multiconnectintellij.csv.psi.stubs.CsvRowStub"
     elementTypeClass = "net.earthcomputer.multiconnectintellij.csv.psi.impl.CsvRowType"
  }

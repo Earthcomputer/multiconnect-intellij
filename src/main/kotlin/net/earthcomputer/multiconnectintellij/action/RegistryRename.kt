@@ -9,17 +9,19 @@ import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.JavaPsiFacade
+import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiLiteral
 import com.intellij.psi.search.searches.ReferencesSearch
+import com.intellij.psi.util.createSmartPointer
 import com.intellij.psi.util.parentOfType
+import com.intellij.refactoring.BaseRefactoringProcessor
 import com.intellij.refactoring.RefactorJBundle
 import com.intellij.refactoring.RefactoringActionHandler
 import com.intellij.refactoring.ui.RefactoringDialog
 import com.intellij.refactoring.util.CommonRefactoringUtil
 import com.intellij.refactoring.util.FixableUsageInfo
-import com.intellij.refactoring.util.FixableUsagesRefactoringProcessor
 import com.intellij.ui.EnumComboBoxModel
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.dsl.builder.bindItem
@@ -215,28 +217,32 @@ private class RegistryRenameProcessor(
     private val oldName: String,
     private val newName: String,
     private val moveExistingToOld: Boolean,
-) : FixableUsagesRefactoringProcessor(entry.project) {
+) : BaseRefactoringProcessor(entry.project) {
     override fun createUsageViewDescriptor(usages: Array<UsageInfo>): UsageViewDescriptor {
         return BaseUsageViewDescriptor(entry)
     }
 
-    override fun findUsages(usages: MutableList<FixableUsageInfo>) {
+    override fun findUsages(): Array<UsageInfo> {
+        val usages = mutableListOf<UsageInfo>()
         val entryProperties = entry.properties?.toMap()
         val javaReferences = mutableSetOf<RegistryReference>()
 
-        val virtualFile = entry.containingFile.virtualFile ?: return
-        val dataDir = virtualFile.parent?.parent ?: return
+        val virtualFile = entry.containingFile.virtualFile ?: return UsageInfo.EMPTY_ARRAY
+        val dataDir = virtualFile.parent?.parent ?: return UsageInfo.EMPTY_ARRAY
         for (protocolDir in dataDir.children) {
             if (!protocolDir.isDirectory || !CsvFileType.versionRegex.matches(protocolDir.name)) {
                 continue
             }
             val registryFile = protocolDir.findChild(virtualFile.name) ?: continue
             val registryPsi = entry.manager.findFile(registryFile) as? CsvFile ?: continue
-            val rows = registryPsi.getRowsByKey("name", entry.namespace, entry.path)
-                .filter {
-                    val nameEntry = it.getEntry("name") ?: return@filter false
-                    nameEntry.properties?.toMap() == entryProperties
-                }
+            var rows = registryPsi.getRowsByKey("name", entry.namespace, entry.path)
+                .reversed() // reverse so later stuff in the document is modified first
+            if (entryProperties != null) {
+                rows = rows.filter {
+                        val nameEntry = it.getEntry("name") ?: return@filter false
+                        nameEntry.properties?.toMap() == entryProperties
+                    }
+            }
             val keepOldName = moveExistingToOld && run {
                 val cmp = compareVersions(protocolDir.name, version)
                 when (beforeAfter) {
@@ -260,6 +266,18 @@ private class RegistryRenameProcessor(
         }
 
         javaReferences.mapTo(usages) { RenameJavaReference(it.element, newName) }
+
+        return usages.toTypedArray()
+    }
+
+    override fun performRefactoring(usages: Array<UsageInfo>) {
+        for (usage in usages) {
+            when (usage) {
+                is FixableUsageInfo -> usage.fixUsage()
+                is MyFixableUsageInfo -> usage.fixUsage()
+            }
+        }
+        PsiDocumentManager.getInstance(myProject).commitAllDocuments()
     }
 
     override fun getCommandName(): String {
@@ -267,23 +285,28 @@ private class RegistryRenameProcessor(
     }
 }
 
+private abstract class MyFixableUsageInfo(element: PsiElement) : UsageInfo(element.containingFile) {
+    private val myActualElement = element.createSmartPointer(project)
+
+    val actualElement get() = myActualElement.element
+
+    abstract fun fixUsage()
+}
+
 private class RenameInCsv(
     element: CsvRow,
     private val toName: String,
     private val keepOldName: Boolean
-) : FixableUsageInfo(element) {
+) : MyFixableUsageInfo(element) {
     override fun fixUsage() {
-        val row = element as? CsvRow ?: return
+        val row = actualElement as? CsvRow ?: return
 
         if (keepOldName && row.getEntry("oldName") == null) {
-            val nameEntry = row.getEntry("name")
-            if (nameEntry != null) {
-                row.setEntry("oldName", nameEntry)
-            }
+            row.copyEntry("name", "oldName", false)
         }
 
         val newName = row.manager.csvElementFactory.createEntryFromText(toName)
-        row.setEntry("name", newName)
+        row.setEntry("name", newName, false)
     }
 }
 
@@ -291,25 +314,20 @@ private class RenameBlockState(
     element: CsvRow,
     private val toName: String,
     private val keepOldName: Boolean
-) : FixableUsageInfo(element) {
+) : MyFixableUsageInfo(element) {
     override fun fixUsage() {
-        val row = element as? CsvRow ?: return
+        val row = actualElement as? CsvRow ?: return
 
-        val nameEntry = row.getEntry("name") ?: return
         val newName = row.manager.csvElementFactory.createEntryFromText(toName)
 
         if (keepOldName && row.getEntry("oldName") == null) {
-            row.setEntry("oldName", nameEntry)
+            row.copyEntry("oldName", "name", false)
         }
 
-        val oldNamespace = nameEntry.identifier.namespaceElement
-        val newNamespace = newName.identifier.namespaceElement
-        if ((oldNamespace == null) xor (newNamespace == null)) {
-            nameEntry.identifier.replace(newName.identifier)
-        } else {
-            oldNamespace?.replace(newNamespace!!)
-            nameEntry.identifier.pathElement.replace(newName.identifier.pathElement)
-        }
+        row.replaceEntry("name", {
+            it.identifier.replace(newName.identifier)
+            it
+        }, false)
     }
 }
 

@@ -11,6 +11,7 @@ import static net.earthcomputer.multiconnectintellij.csv.psi.CsvTypes.*;
 import com.intellij.extapi.psi.StubBasedPsiElementBase;
 import net.earthcomputer.multiconnectintellij.csv.psi.stubs.CsvRowStub;
 import net.earthcomputer.multiconnectintellij.csv.psi.*;
+import java.util.function.UnaryOperator;
 import com.intellij.psi.stubs.IStubElementType;
 import com.intellij.psi.tree.IElementType;
 
@@ -58,8 +59,34 @@ public class CsvRowImpl extends StubBasedPsiElementBase<CsvRowStub> implements C
 
   @Override
   @Nullable
+  public CsvEntry setEntry(@NotNull String key, @NotNull CsvEntry entry, boolean loadAst) {
+    return CsvPsiImplUtil.setEntry(this, key, entry, loadAst);
+  }
+
+  @Override
+  @Nullable
   public CsvEntry setEntry(@NotNull String key, @NotNull CsvEntry entry) {
     return CsvPsiImplUtil.setEntry(this, key, entry);
+  }
+
+  @Override
+  public void copyEntry(@NotNull String fromKey, @NotNull String toKey, boolean loadAst) {
+    CsvPsiImplUtil.copyEntry(this, fromKey, toKey, loadAst);
+  }
+
+  @Override
+  public void copyEntry(@NotNull String fromKey, @NotNull String toKey) {
+    CsvPsiImplUtil.copyEntry(this, fromKey, toKey);
+  }
+
+  @Override
+  public void replaceEntry(@NotNull String key, @NotNull UnaryOperator<CsvEntry> func, boolean loadAst) {
+    CsvPsiImplUtil.replaceEntry(this, key, func, loadAst);
+  }
+
+  @Override
+  public void replaceEntry(@NotNull String key, @NotNull UnaryOperator<CsvEntry> func) {
+    CsvPsiImplUtil.replaceEntry(this, key, func);
   }
 
 }
