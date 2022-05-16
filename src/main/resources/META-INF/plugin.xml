@@ -112,14 +112,4 @@
                          level="ERROR"
                          implementationClass="net.earthcomputer.multiconnectintellij.inspection.FilledArgumentInspection"/>
     </extensions>
-
-    <actions>
-        <group id="MulticonnectRefactoring">
-            <add-to-group group-id="RefactoringMenu" anchor="last"/>
-            <action id="multiconnect-intellij.RegistryRename"
-                    class="net.earthcomputer.multiconnectintellij.action.RegistryRenameAction"
-                    text="Rename Registry Entry"
-                    description="Renames a registry entry between a range of versions"/>
-        </group>
-    </actions>
 </idea-plugin>
