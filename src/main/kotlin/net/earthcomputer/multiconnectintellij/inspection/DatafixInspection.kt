@@ -20,7 +20,7 @@ class DatafixInspection : MessageVariantAnnotationInspection(Constants.DATAFIX) 
     ): Array<ProblemDescriptor>? {
         val field = annotation.parentOfType<PsiField>() ?: return null
         val fieldType = McTypes.getDeepComponentType(field.type)
-        if ((fieldType as? PsiClassType)?.resolve()?.qualifiedName != Constants.MINECRAFT_NBT_COMPOUND) {
+        if ((fieldType as? PsiClassType)?.resolve()?.qualifiedName != Constants.MINECRAFT_COMPOUND_TAG) {
             return manager.createProblem(
                 field.typeElement ?: annotation.nameReferenceElement ?: return null,
                 isOnTheFly,

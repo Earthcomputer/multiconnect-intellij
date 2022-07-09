@@ -19,8 +19,8 @@ import net.earthcomputer.multiconnectintellij.Constants.JAVA_UTIL_OPTIONAL_LONG
 import net.earthcomputer.multiconnectintellij.Constants.JAVA_UTIL_UUID
 import net.earthcomputer.multiconnectintellij.Constants.MESSAGE
 import net.earthcomputer.multiconnectintellij.Constants.MESSAGE_VARIANT
-import net.earthcomputer.multiconnectintellij.Constants.MINECRAFT_IDENTIFIER
-import net.earthcomputer.multiconnectintellij.Constants.MINECRAFT_NBT_COMPOUND
+import net.earthcomputer.multiconnectintellij.Constants.MINECRAFT_RESOURCE_LOCATION
+import net.earthcomputer.multiconnectintellij.Constants.MINECRAFT_COMPOUND_TAG
 import net.earthcomputer.multiconnectintellij.Constants.NETWORK_ENUM
 
 class InvalidMessageFieldTypeInspection : MessageVariantInspectionBase() {
@@ -59,8 +59,8 @@ class InvalidMessageFieldTypeInspection : MessageVariantInspectionBase() {
             return when (qName) {
                 JAVA_LANG_STRING,
                 JAVA_UTIL_UUID,
-                MINECRAFT_IDENTIFIER,
-                MINECRAFT_NBT_COMPOUND,
+                MINECRAFT_RESOURCE_LOCATION,
+                MINECRAFT_COMPOUND_TAG,
                 JAVA_UTIL_OPTIONAL_INT,
                 JAVA_UTIL_OPTIONAL_LONG,
                 FASTUTIL_INT_LIST,

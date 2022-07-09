@@ -12,8 +12,8 @@ import com.intellij.psi.util.parentOfType
 import net.earthcomputer.multiconnectintellij.Constants
 import net.earthcomputer.multiconnectintellij.Constants.JAVA_UTIL_FUNCTION_INT_FUNCTION
 import net.earthcomputer.multiconnectintellij.Constants.JAVA_UTIL_FUNCTION_TO_INT_FUNCTION
-import net.earthcomputer.multiconnectintellij.Constants.MINECRAFT_IDENTIFIER
-import net.earthcomputer.multiconnectintellij.Constants.MINECRAFT_NETWORK_HANDLER
+import net.earthcomputer.multiconnectintellij.Constants.MINECRAFT_RESOURCE_LOCATION
+import net.earthcomputer.multiconnectintellij.Constants.MINECRAFT_CLIENT_PACKET_LISTENER
 import net.earthcomputer.multiconnectintellij.Constants.MULTICONNECT_DELAYED_PACKET_SENDER
 import net.earthcomputer.multiconnectintellij.Constants.MULTICONNECT_TYPED_MAP
 
@@ -33,7 +33,7 @@ class FilledArgumentInspection : MessageVariantAnnotationInspection(Constants.FI
                 && paramType != PsiType.SHORT
                 && paramType != PsiType.INT
                 && paramType != PsiType.LONG
-                && (paramType !is PsiClassType || paramType.resolve()?.qualifiedName != MINECRAFT_IDENTIFIER)
+                && (paramType !is PsiClassType || paramType.resolve()?.qualifiedName != MINECRAFT_RESOURCE_LOCATION)
             ) {
                 return manager.createProblem(
                     parameter.typeElement ?: annotation.nameReferenceElement ?: return null,
@@ -67,7 +67,7 @@ class FilledArgumentInspection : MessageVariantAnnotationInspection(Constants.FI
         if (qName != JAVA_UTIL_FUNCTION_INT_FUNCTION && qName != JAVA_UTIL_FUNCTION_TO_INT_FUNCTION) {
             return false
         }
-        if ((type.parameters.singleOrNull() as? PsiClassType)?.resolve()?.qualifiedName != MINECRAFT_IDENTIFIER) {
+        if ((type.parameters.singleOrNull() as? PsiClassType)?.resolve()?.qualifiedName != MINECRAFT_RESOURCE_LOCATION) {
             return false
         }
         return true
@@ -76,7 +76,7 @@ class FilledArgumentInspection : MessageVariantAnnotationInspection(Constants.FI
     private fun isValidFilledType(parameter: PsiParameter, type: PsiType): Boolean {
         val qName = (type as? PsiClassType)?.resolve()?.qualifiedName ?: return false
         return when (qName) {
-            MINECRAFT_NETWORK_HANDLER,
+            MINECRAFT_CLIENT_PACKET_LISTENER,
             MULTICONNECT_TYPED_MAP -> true
             MULTICONNECT_DELAYED_PACKET_SENDER -> {
                 val method = parameter.parentOfType<PsiMethod>() ?: return false

@@ -27,9 +27,9 @@ object Constants {
     const val JAVA_UTIL_OPTIONAL_INT = "java.util.OptionalInt"
     const val JAVA_UTIL_OPTIONAL_LONG = "java.util.OptionalLong"
     const val JAVA_UTIL_UUID = "java.util.UUID"
-    const val MINECRAFT_IDENTIFIER = "net.minecraft.util.Identifier"
-    const val MINECRAFT_NBT_COMPOUND = "net.minecraft.nbt.NbtCompound"
-    const val MINECRAFT_NETWORK_HANDLER = "net.minecraft.client.network.ClientPlayNetworkHandler"
+    const val MINECRAFT_RESOURCE_LOCATION = "net.minecraft.resources.ResourceLocation"
+    const val MINECRAFT_COMPOUND_TAG = "net.minecraft.nbt.CompoundTag"
+    const val MINECRAFT_CLIENT_PACKET_LISTENER = "net.minecraft.client.multiplayer.ClientPacketListener"
     const val MULTICONNECT_DELAYED_PACKET_SENDER = "net.earthcomputer.multiconnect.impl.DelayedPacketSender"
     const val MULTICONNECT_TYPED_MAP = "net.earthcomputer.multiconnect.protocols.generic.TypedMap"
 }

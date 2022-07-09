@@ -32,7 +32,7 @@ import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.createSmartPointer
 import com.intellij.psi.util.parentOfType
 import com.intellij.util.ProcessingContext
-import net.earthcomputer.multiconnectintellij.Constants.MINECRAFT_IDENTIFIER
+import net.earthcomputer.multiconnectintellij.Constants.MINECRAFT_RESOURCE_LOCATION
 import net.earthcomputer.multiconnectintellij.csv.psi.CsvFile
 import net.earthcomputer.multiconnectintellij.inspection.McTypes
 
@@ -275,7 +275,7 @@ object StringValueReferenceProvider : PsiReferenceProvider() {
                         || fieldType == PsiType.SHORT
                         || fieldType == PsiType.INT
                         || fieldType == PsiType.LONG
-                        || fieldClass?.qualifiedName == MINECRAFT_IDENTIFIER
+                        || fieldClass?.qualifiedName == MINECRAFT_RESOURCE_LOCATION
                     ) -> {
                 val clazz = contextField.containingClass ?: return PsiReference.EMPTY_ARRAY
                 val registryValue = contextField.getAnnotation(Constants.REGISTRY)?.getEnumConstant("value") ?: return PsiReference.EMPTY_ARRAY

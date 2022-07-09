@@ -15,7 +15,7 @@ import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiType
 import com.intellij.psi.util.PsiTreeUtil
 import net.earthcomputer.multiconnectintellij.Constants
-import net.earthcomputer.multiconnectintellij.Constants.MINECRAFT_IDENTIFIER
+import net.earthcomputer.multiconnectintellij.Constants.MINECRAFT_RESOURCE_LOCATION
 import net.earthcomputer.multiconnectintellij.getBoolean
 import net.earthcomputer.multiconnectintellij.getDoubleArray
 import net.earthcomputer.multiconnectintellij.getLongArray
@@ -228,7 +228,7 @@ class DefaultConstructInspection : MessageVariantAnnotationInspection(Constants.
         }
         val fieldClass = fieldType.resolve() ?: return false
         val qName = fieldClass.qualifiedName ?: return false
-        if (qName == JAVA_LANG_STRING || qName == MINECRAFT_IDENTIFIER) {
+        if (qName == JAVA_LANG_STRING || qName == MINECRAFT_RESOURCE_LOCATION) {
             return true
         }
         if (fieldClass.hasAnnotation(Constants.NETWORK_ENUM)) {

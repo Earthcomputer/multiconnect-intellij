@@ -31,8 +31,8 @@ import net.earthcomputer.multiconnectintellij.Constants.JAVA_UTIL_BIT_SET
 import net.earthcomputer.multiconnectintellij.Constants.JAVA_UTIL_OPTIONAL_INT
 import net.earthcomputer.multiconnectintellij.Constants.JAVA_UTIL_OPTIONAL_LONG
 import net.earthcomputer.multiconnectintellij.Constants.JAVA_UTIL_UUID
-import net.earthcomputer.multiconnectintellij.Constants.MINECRAFT_IDENTIFIER
-import net.earthcomputer.multiconnectintellij.Constants.MINECRAFT_NBT_COMPOUND
+import net.earthcomputer.multiconnectintellij.Constants.MINECRAFT_RESOURCE_LOCATION
+import net.earthcomputer.multiconnectintellij.Constants.MINECRAFT_COMPOUND_TAG
 import org.intellij.lang.annotations.Language
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -118,8 +118,8 @@ public class Message {
                     FASTUTIL_INT_LIST, JAVA_UTIL_OPTIONAL_INT -> "VAR_INT"
                     FASTUTIL_LONG_LIST, JAVA_UTIL_OPTIONAL_LONG -> "VAR_LONG"
                     JAVA_UTIL_BIT_SET -> "BITSET"
-                    MINECRAFT_IDENTIFIER -> "IDENTIFIER"
-                    MINECRAFT_NBT_COMPOUND -> "NBT_COMPOUND"
+                    MINECRAFT_RESOURCE_LOCATION -> "IDENTIFIER"
+                    MINECRAFT_COMPOUND_TAG -> "NBT_COMPOUND"
                     JAVA_LANG_STRING -> "STRING"
                     JAVA_UTIL_UUID -> "UUID"
                     else -> if (clazz.hasAnnotation(Constants.NETWORK_ENUM)) {
