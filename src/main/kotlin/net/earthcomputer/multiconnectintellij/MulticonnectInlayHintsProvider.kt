@@ -118,8 +118,8 @@ public class Message {
                     FASTUTIL_INT_LIST, JAVA_UTIL_OPTIONAL_INT -> "VAR_INT"
                     FASTUTIL_LONG_LIST, JAVA_UTIL_OPTIONAL_LONG -> "VAR_LONG"
                     JAVA_UTIL_BIT_SET -> "BITSET"
-                    MINECRAFT_RESOURCE_LOCATION -> "IDENTIFIER"
-                    MINECRAFT_COMPOUND_TAG -> "NBT_COMPOUND"
+                    MINECRAFT_RESOURCE_LOCATION -> "RESOURCE_LOCATION"
+                    MINECRAFT_COMPOUND_TAG -> "COMPOUND_TAG"
                     JAVA_LANG_STRING -> "STRING"
                     JAVA_UTIL_UUID -> "UUID"
                     else -> if (clazz.hasAnnotation(Constants.NETWORK_ENUM)) {

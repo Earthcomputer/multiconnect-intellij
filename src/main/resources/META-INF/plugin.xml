@@ -19,6 +19,7 @@
         <codeInsight.lineMarkerProvider language="JAVA" implementationClass="net.earthcomputer.multiconnectintellij.MessageVariantLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="JAVA" implementationClass="net.earthcomputer.multiconnectintellij.MulticonnectFunctionLineMarkerProvider"/>
         <fileType name="Multiconnect CSV File" implementationClass="net.earthcomputer.multiconnectintellij.csv.CsvFileType" fieldName="INSTANCE" language="MulticonnectCSV"/>
+        <implicitUsageProvider implementation="net.earthcomputer.multiconnectintellij.MulticonnectImplicitUsageProvider"/>
         <lang.elementManipulator forClass="net.earthcomputer.multiconnectintellij.csv.psi.CsvStringValue" implementationClass="net.earthcomputer.multiconnectintellij.csv.psi.CsvStringValueManipulator"/>
         <lang.parserDefinition language="MulticonnectCSV" implementationClass="net.earthcomputer.multiconnectintellij.csv.CsvParserDefinition"/>
         <lang.syntaxHighlighterFactory language="MulticonnectCSV" implementationClass="net.earthcomputer.multiconnectintellij.csv.CsvSyntaxHighlighterFactory"/>

@@ -2,6 +2,7 @@ package net.earthcomputer.multiconnectintellij
 
 object Constants {
     const val ARGUMENT = "net.earthcomputer.multiconnect.ap.Argument"
+    const val CUSTOM_FIX = "net.earthcomputer.multiconnect.ap.CustomFix"
     const val DATAFIX = "net.earthcomputer.multiconnect.ap.Datafix"
     const val DEFAULT_CONSTRUCT = "net.earthcomputer.multiconnect.ap.DefaultConstruct"
     const val FILLED_ARGUMENT = "net.earthcomputer.multiconnect.ap.FilledArgument"

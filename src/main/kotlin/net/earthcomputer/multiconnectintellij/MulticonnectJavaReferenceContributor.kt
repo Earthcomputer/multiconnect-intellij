@@ -65,6 +65,7 @@ object StringReferenceProvider : PsiReferenceProvider() {
         psiLiteral(string()).inside(psiClass().withAnnotation(Constants.MESSAGE_VARIANT))
             .inside(or(
                 psiNameValuePair().withName("value").insideAnnotation(Constants.ARGUMENT),
+                psiNameValuePair().withName("value").insideAnnotation(Constants.CUSTOM_FIX),
                 psiNameValuePair().withName("compute").insideAnnotation(Constants.DEFAULT_CONSTRUCT),
                 psiNameValuePair().withName("compute").insideAnnotation(Constants.INTRODUCE),
                 psiNameValuePair().withName("compute").insideAnnotation(Constants.LENGTH),
