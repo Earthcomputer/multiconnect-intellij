@@ -24,7 +24,7 @@ class MessageVariantLineMarkerProvider : RelatedItemLineMarkerProvider() {
         val group = clazz.interfaces.singleOrNull() ?: return
         if (group.hasAnnotation(Constants.MESSAGE)) {
             val targets = ClassInheritorsSearch.search(group, false)
-                .filter { !clazz.isEquivalentTo(it) }
+                .filter { !clazz.isEquivalentTo(it) && it.hasAnnotation(Constants.MESSAGE_VARIANT) }
                 .mapNotNull { it.nameIdentifier }
                 .toList()
             result += NavigationGutterIconBuilder.create(Icons.assocFile)

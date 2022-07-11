@@ -134,6 +134,12 @@ class StringReference(
             Constants.ARGUMENT -> {
                 val contextClasses = getArgumentContextClasses(element)
                 if (isLast) {
+                    if (referenceName == "this") {
+                        val method = element.parentOfType<PsiMethod>() ?: return emptyList()
+                        if (method.hasAnnotation(Constants.HANDLER) || getReferencingAnnotations(method).any { it.hasQualifiedName(Constants.INTRODUCE) }) {
+                            return contextClasses.map { Result(it.clazz, it.versions) }
+                        }
+                    }
                     contextClasses.mapNotNull { contextClass ->
                         contextClass.clazz.findFieldByName(referenceName, true)?.let { Result(it, contextClass.versions) }
                     }
@@ -171,18 +177,24 @@ class StringReference(
         }
     }
 
+    private fun getReferencingAnnotations(element: PsiElement): List<PsiAnnotation> {
+        val method = element.parentOfType<PsiMethod>(withSelf = true) ?: return emptyList()
+        return ReferencesSearch.search(method).asSequence()
+            .filterIsInstance<StringReference>()
+            .mapNotNull { it.element.parentOfType<PsiAnnotation>() }
+            .toList()
+    }
+
     private fun getArgumentContextClasses(element: PsiElement): List<VariantInfo> {
         val method = element.parentOfType<PsiMethod>() ?: return emptyList()
-        val result = ReferencesSearch.search(method).asSequence().filterIsInstance<StringReference>().flatMap { reference ->
-            val refElt = reference.element
-            val refAnn = refElt.parentOfType<PsiAnnotation>() ?: return@flatMap emptyList()
+        val result = getReferencingAnnotations(method).flatMap { refAnn ->
             val refAnnName = refAnn.qualifiedName ?: return@flatMap emptyList()
             when {
                 parent != null -> parent.doResolve().mapNotNull { result ->
                     (result.element as? PsiClass)?.let { VariantInfo(result.versionRange, it) }
                 }
                 refAnnName == Constants.INTRODUCE -> {
-                    val containingClass = refElt.parentOfType<PsiClass>() ?: return@flatMap emptyList()
+                    val containingClass = refAnn.parentOfType<PsiClass>() ?: return@flatMap emptyList()
                     val direction = when (refAnn.getEnumConstant("direction")?.name) {
                         "FROM_NEWER" -> PacketDirection.SERVERBOUND
                         "FROM_OLDER" -> PacketDirection.CLIENTBOUND
@@ -195,7 +207,7 @@ class StringReference(
                         || (direction == PacketDirection.SERVERBOUND && versionRange.last == Int.MAX_VALUE)) {
                         return@flatMap emptyList()
                     }
-                    val allProtocols = refElt.project.protocolVersions
+                    val allProtocols = refAnn.project.protocolVersions
                     val previousProtocol = if (direction == PacketDirection.CLIENTBOUND) {
                         allProtocols.getOrNull(allProtocols.binarySearch(versionRange.first) - 1)
                     } else {
@@ -204,7 +216,7 @@ class StringReference(
                     val variant = variantProvider.getVariant(previousProtocol) ?: return@flatMap emptyList()
                     listOf(VariantInfo(previousProtocol..previousProtocol, variant.clazz))
                 }
-                else -> listOfNotNull(refElt.parentOfType<PsiClass>()?.let { VariantInfo(getVersionRange(it), it) })
+                else -> listOfNotNull(refAnn.parentOfType<PsiClass>()?.let { VariantInfo(getVersionRange(it), it) })
             }
         }.toMutableList()
 
