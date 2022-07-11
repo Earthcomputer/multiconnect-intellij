@@ -61,39 +61,42 @@ enum class PacketDirection {
 }
 
 fun getPacketDirection(clazz: PsiClass): PacketDirection? {
-    return findAllPacketUsers(clazz).asSequence().flatMap { packet_ ->
-        var packet = packet_
+    return CachedValuesManager.getCachedValue(clazz) {
+        val result = findAllPacketUsers(clazz).asSequence().flatMap { packet_ ->
+            var packet = packet_
 
-        if (packet.hasAnnotation(Constants.MESSAGE_VARIANT)) {
-            val group = packet.interfaces.singleOrNull()
-            if (group != null && group.hasAnnotation(Constants.MESSAGE)) {
-                packet = group
+            if (packet.hasAnnotation(Constants.MESSAGE_VARIANT)) {
+                val group = packet.interfaces.singleOrNull()
+                if (group != null && group.hasAnnotation(Constants.MESSAGE)) {
+                    packet = group
+                }
+            }
+
+            if (packet.hasAnnotation(Constants.MESSAGE_VARIANT)) {
+                sequenceOf(packet)
+            } else {
+                ClassInheritorsSearch.search(packet, false).asSequence().filter { it.hasAnnotation(Constants.MESSAGE_VARIANT) }
+            }
+        }.flatMap { packet ->
+            ReferencesSearch.search(packet).asSequence().filter {
+                CsvReferenceContributor.protocolClassPattern.accepts(it.element)
+            }
+        }.mapNotNull { reference ->
+            reference.element.containingFile?.virtualFile?.let {
+                when (it.name) {
+                    "cpackets.csv" -> PacketDirection.SERVERBOUND
+                    "spackets.csv" -> PacketDirection.CLIENTBOUND
+                    else -> null
+                }
+            }
+        }.reduceOrNull { a, b ->
+            if (a == b) {
+                a
+            } else {
+                PacketDirection.BOTH
             }
         }
-
-        if (packet.hasAnnotation(Constants.MESSAGE_VARIANT)) {
-            sequenceOf(packet)
-        } else {
-            ClassInheritorsSearch.search(packet, false).asSequence().filter { it.hasAnnotation(Constants.MESSAGE_VARIANT) }
-        }
-    }.flatMap { packet ->
-        ReferencesSearch.search(packet).asSequence().filter {
-            CsvReferenceContributor.protocolClassPattern.accepts(it.element)
-        }
-    }.mapNotNull { reference ->
-        reference.element.containingFile?.virtualFile?.let {
-            when (it.name) {
-                "cpackets.csv" -> PacketDirection.SERVERBOUND
-                "spackets.csv" -> PacketDirection.CLIENTBOUND
-                else -> null
-            }
-        }
-    }.reduceOrNull { a, b ->
-        if (a == b) {
-            a
-        } else {
-            PacketDirection.BOTH
-        }
+        CachedValueProvider.Result(result, PsiModificationTracker.MODIFICATION_COUNT)
     }
 }
 
@@ -116,9 +119,24 @@ fun IntRange.intersectRange(other: IntRange): IntRange {
 
 fun findVariantUsages(classToSearch: PsiClass): List<PsiField> {
     return CachedValuesManager.getCachedValue(classToSearch) {
-        val group = classToSearch.interfaces.singleOrNull()?.takeIf { classToSearch.hasAnnotation(Constants.MESSAGE_VARIANT) && it.hasAnnotation(Constants.MESSAGE) }
-        val candidates = group?.let { ReferencesSearch.search(it) + ReferencesSearch.search(classToSearch) }
-            ?: ReferencesSearch.search(classToSearch)
+        val candidates = ReferencesSearch.search(classToSearch).toMutableList()
+        if (classToSearch.hasAnnotation(Constants.MESSAGE_VARIANT)) {
+            val group = classToSearch.interfaces.singleOrNull()
+            if (group != null && group.hasAnnotation(Constants.MESSAGE)) {
+                candidates += ReferencesSearch.search(group)
+            }
+            if (classToSearch.hasAnnotation(Constants.POLYMORPHIC) && !classToSearch.hasModifierProperty(PsiModifier.ABSTRACT)) {
+                val superclass = classToSearch.superClass
+                if (superclass != null && superclass.hasAnnotation(Constants.MESSAGE_VARIANT)) {
+                    candidates += ReferencesSearch.search(superclass)
+                    val superclassGroup = superclass.interfaces.singleOrNull()
+                    if (superclassGroup != null && superclassGroup.hasAnnotation(Constants.MESSAGE)) {
+                        candidates += ReferencesSearch.search(superclassGroup)
+                    }
+                }
+            }
+        }
+
         val result = candidates.mapNotNull { ref ->
             val element = ref.element
             // PsiField -> PsiTypeElement -> PsiTypeReferenceElement
