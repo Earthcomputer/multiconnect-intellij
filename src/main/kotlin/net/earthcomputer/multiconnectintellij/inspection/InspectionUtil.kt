@@ -9,12 +9,13 @@ import com.intellij.psi.PsiElement
 fun InspectionManager.createProblem(
     element: PsiElement,
     isOnTheFly: Boolean,
-    description: String
+    description: String,
+    quickFix: LocalQuickFix? = null,
 ): Array<ProblemDescriptor> {
     return arrayOf(createProblemDescriptor(
         element,
         description,
-        null as LocalQuickFix?,
+        quickFix,
         ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
         isOnTheFly
     ))

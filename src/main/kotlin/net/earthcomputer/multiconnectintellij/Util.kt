@@ -199,6 +199,9 @@ private fun getVariantProviderUncached(clazz: PsiClass): VariantProvider? {
     }
     val result = ClassInheritorsSearch.search(classToSearch, false)
         .mapNotNull { variant ->
+            if (!variant.hasAnnotation(Constants.MESSAGE_VARIANT)) {
+                return@mapNotNull null
+            }
             VariantInfo(getVersionRange(variant), variant)
         }
         .toMutableList()
