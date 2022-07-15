@@ -42,6 +42,9 @@ val Project.protocolsFile: CsvFile? get() {
     }
 }
 
+/**
+ * Returns a list of all protocol versions, sorted from smallest to largest
+ */
 val Project.protocolVersions: List<Int> get() {
     val protocolsFile = protocolsFile ?: return emptyList()
     return CachedValuesManager.getCachedValue(protocolsFile) {

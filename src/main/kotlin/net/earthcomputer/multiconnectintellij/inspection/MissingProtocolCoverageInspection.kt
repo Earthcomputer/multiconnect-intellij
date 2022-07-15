@@ -63,7 +63,16 @@ class MissingProtocolCoverageInspection : MessageVariantInspectionBase() {
                     )
                 }
             } else {
-                if (versionRange.first != Int.MIN_VALUE) {
+                var expectedMinVersion = allProtocols.firstOrNull { variantProvider.getVariant(it) != null }
+                if (expectedMinVersion == null || expectedMinVersion == allProtocols.firstOrNull()) {
+                    expectedMinVersion = Int.MIN_VALUE
+                }
+                var expectedMaxVersion = allProtocols.lastOrNull { variantProvider.getVariant(it) != null }
+                if (expectedMaxVersion == null || expectedMaxVersion == allProtocols.lastOrNull()) {
+                    expectedMaxVersion = Int.MAX_VALUE
+                }
+
+                if (versionRange.first != expectedMinVersion) {
                     val lastProtocol = allProtocols.getOrNull(allProtocols.binarySearch(versionRange.first) - 1)
                     val hasLastProtocol = lastProtocol != null && variantProvider.getVariant(lastProtocol) != null
                     if (!hasLastProtocol) {
@@ -71,14 +80,19 @@ class MissingProtocolCoverageInspection : MessageVariantInspectionBase() {
                             annotation.findDeclaredAttributeValue("minVersion") ?: clazz.nameIdentifier ?: return null,
                             isOnTheFly,
                             if (lastProtocol == null) {
-                                "This minVersion declaration is not allowed because there are no older variants"
+                                val minVersionName = if (expectedMinVersion == Int.MIN_VALUE) {
+                                    clazz.project.getProtocolName(allProtocols.firstOrNull() ?: expectedMinVersion) ?: allProtocols.firstOrNull()?.toString() ?: expectedMinVersion.toString()
+                                } else {
+                                    clazz.project.getProtocolName(expectedMinVersion) ?: expectedMinVersion.toString()
+                                }
+                                "This minVersion declaration is not allowed because there are no older variants and this group must support down to $minVersionName"
                             } else {
                                 "This minVersion declaration prevents protocol ${clazz.project.getProtocolName(lastProtocol) ?: lastProtocol.toString()} from being handled"
                             }
                         )
                     }
                 }
-                if (versionRange.last != Int.MAX_VALUE) {
+                if (versionRange.last != expectedMaxVersion) {
                     val nextProtocol = allProtocols.getOrNull(allProtocols.binarySearch(versionRange.last) + 1)
                     val hasNextProtocol = nextProtocol != null && variantProvider.getVariant(nextProtocol) != null
                     if (!hasNextProtocol) {
@@ -86,7 +100,12 @@ class MissingProtocolCoverageInspection : MessageVariantInspectionBase() {
                             annotation.findDeclaredAttributeValue("maxVersion") ?: clazz.nameIdentifier ?: return null,
                             isOnTheFly,
                             if (nextProtocol == null) {
-                                "This maxVersion declaration is not allowed because there are no newer variants"
+                                val maxVersionName = if (expectedMaxVersion == Int.MAX_VALUE) {
+                                    clazz.project.getProtocolName(allProtocols.lastOrNull() ?: expectedMaxVersion) ?: allProtocols.lastOrNull()?.toString() ?: expectedMaxVersion.toString()
+                                } else {
+                                    clazz.project.getProtocolName(expectedMaxVersion) ?: expectedMaxVersion.toString()
+                                }
+                                "This maxVersion declaration is not allowed because there are no newer variants and this group must support up to $maxVersionName"
                             } else {
                                 "This maxVersion declaration prevents protocol ${clazz.project.getProtocolName(nextProtocol) ?: nextProtocol.toString()} from being handled"
                             }

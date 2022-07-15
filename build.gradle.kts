@@ -54,4 +54,8 @@ tasks {
     runIde {
         systemProperty("idea.ProcessCanceledException", "disabled")
     }
+
+    buildSearchableOptions {
+        enabled = false
+    }
 }
